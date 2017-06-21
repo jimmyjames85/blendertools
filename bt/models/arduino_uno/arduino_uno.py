@@ -12,6 +12,7 @@ def cutOutPCB(pcb, cutout):
     mesh.remove(cutout)
     return newPCB
 
+
 def appendPCB(pcb, appendage):
     """
     This removes both pcb and appendage mesh data and returns
@@ -22,8 +23,8 @@ def appendPCB(pcb, appendage):
     mesh.remove(appendage)
     return newPCB
 
-def buildBoard():
 
+def build_arduino_uno():
     # this board is iterated at the bottom and each mesh inside is joined into one object
     board = []
 
@@ -49,7 +50,6 @@ def buildBoard():
                        dx=blmhCenterX,
                        dy=blmhCenterY)
     unoPCB = cutOutPCB(unoPCB, blmh)
-
 
     # top left mounting hole
     tlmhCenterX = 15.3
@@ -90,7 +90,7 @@ def buildBoard():
     usbDepth = 10.8
     usbCenterX = 1.58
     usbCenterY = 38.1
-    usbCenterZ = usbDepth / 2 + unoDepth -0.0001 # small offset cleans up boolean union
+    usbCenterZ = usbDepth / 2 + unoDepth - 0.0001  # small offset cleans up boolean union
     usbPort = mesh.newHexahedron(usbWidth, usbHeight, usbDepth)
     mesh.transposeMesh(usbPort,
                        dx=usbCenterX,
@@ -166,19 +166,23 @@ def buildBoard():
     return ret
 
 
-def main():
+def new_arduino_uno(name="arduino_uno"):
+    pcbMesh = build_arduino_uno()
+    obj = object.newObjectFromMesh(name, pcbMesh)
+    return obj
+
+
+def main(name="arduino_uno"):
     import importlib;
     importlib.reload(mesh)  # todo remove this
 
-    name = "arduino_uno"
     object.deleteObjIfExists(name)
-    pcbMesh = buildBoard()
+    pcbMesh = build_arduino_uno()
 
     obj = object.newObjectFromMesh(name, pcbMesh)
     object.selectNone()
 
     return pcbMesh, obj
-    # todo
-    # import sys, importlib; sys.path.append('/home/jim/git/blendertools'); print('done')
-    # print('importing'); from bt.models.arduino_uno import arduino_uno;
+
+    # import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.arduino_uno import arduino_uno;
     # print('reloading...'); importlib.reload(arduino_uno); print('loaded'); me, obj = arduino_uno.main()

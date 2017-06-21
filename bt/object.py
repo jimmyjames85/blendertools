@@ -1,6 +1,7 @@
 import bpy
+from bt import mesh
 from math import radians
-
+from bt.common import XAXIS, YAXIS, ZAXIS
 
 def selectNone():
     bpy.ops.object.select_all(action='DESELECT')
@@ -43,6 +44,43 @@ def rotateObj(obj, axis, deg):
     obj.rotation_euler[axis] = radians(deg)
 
 
+def translate_object(obj, dx=0, dy=0, dz=0):
+    obj.location.x += dx
+    obj.location.y += dy
+    obj.location.z += dz
+
+
+def calculate_center_of_objects(objs):
+
+    if len(objs) == 0:
+        raise Exception("No objs provided")
+
+    meshData = []
+    for obj in objs:
+        meshData.append(mesh.fromObject(obj))
+
+    for i, me in enumerate(meshData):
+        mesh.transposeMesh(me, dx=objs[i].location[XAXIS], dy=objs[i].location[YAXIS], dz=objs[i].location[ZAXIS])
+
+    tmp_mesh = mesh.fromMeshes(meshData)
+    tmp_obj = newObjectFromMesh("tmp_obj_for_center", tmp_mesh)
+
+    center = mesh.calculate_center(tmp_mesh)
+
+    remove(tmp_obj)
+    return center
+
+def newEmpty(name="Empty"):
+    obj = bpy.data.objects.new(name=name, object_data=None)
+    scn = bpy.context.scene
+    scn.objects.link(obj)
+    return obj
+    # return bpy.ops.object.empty_add(location=location)
+
+def setParent(child, parent):
+    child.parent = parent
+
+
 def joinObjs(obj1, obj2):
     object.selectNone()
     scn = bpy.context.scene
@@ -52,6 +90,9 @@ def joinObjs(obj1, obj2):
     bpy.ops.object.join()
     return obj1
 
+def remove(obj, do_unlink=True):
+    bpy.data.meshes.remove(obj.data, do_unlink=True)
+    bpy.data.objects.remove(obj, do_unlink=True)
 
 def deleteObjIfExists(objName):
     if objName in bpy.data.objects:
@@ -59,8 +100,10 @@ def deleteObjIfExists(objName):
         mesh = obj.data
 
         # delete it
-        bpy.data.objects.remove(obj, do_unlink=True)
-        bpy.data.meshes.remove(mesh, do_unlink=True)
+        if obj is not None:
+            bpy.data.objects.remove(obj, do_unlink=True)
+        if mesh is not None:
+            bpy.data.meshes.remove(mesh, do_unlink=True)
         return True
 
     return False
