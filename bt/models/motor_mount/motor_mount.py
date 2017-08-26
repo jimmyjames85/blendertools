@@ -14,16 +14,16 @@ def buildMotor():
     motor = []
 
     # lower axis mount
-    lam = mesh.newCylinder(diameter=31.5, height=11.2)
+    lam = mesh.newCylinder(diameter=31.5, depth=11.2)
     motor.append(lam)
 
     # upper axis mount
-    uam = mesh.newCylinder(diameter=25.4 + 1.5, height=11.2)
+    uam = mesh.newCylinder(diameter=25.4 + 1.5, depth=11.2)
     mesh.transposeMesh(uam, dx=6.44, dy=13.63)
     motor.append(uam)
 
     # top left axis mount
-    tlam = mesh.newCylinder(diameter=27.6, height=38.8)
+    tlam = mesh.newCylinder(diameter=27.6, depth=38.8)
     mesh.transposeMesh(tlam, dx=-7.12, dy=16.38, dz=-13.8)
     motor.append(tlam)
 
@@ -33,7 +33,7 @@ def buildMotor():
     motor.append(mb)
 
     # wheel axel
-    wa = mesh.newCylinder(diameter=4, height=74)
+    wa = mesh.newCylinder(diameter=4, depth=74)
     mesh.transposeMesh(wa, dz=10)
     motor.append(wa)
 
@@ -44,7 +44,7 @@ def buildMotor():
 
 
     # left mounting hole
-    lmh = mesh.newCylinder(diameter=3.5, height=6)
+    lmh = mesh.newCylinder(diameter=3.5, depth=6)
     mesh.rotateMesh(lmh, XAXIS, 90)
     mesh.transposeMesh(lmh, dx=-8.70, dy=3.94, dz=topScrewDepth)
     motor.append(lmh)
@@ -56,7 +56,7 @@ def buildMotor():
     # motor.append(lsh)
 
     # right mounting hole
-    rmh = mesh.newCylinder(diameter=3.5, height=6)
+    rmh = mesh.newCylinder(diameter=3.5, depth=6)
     mesh.rotateMesh(rmh, XAXIS, 90)
     mesh.transposeMesh(rmh, dx=8.70, dy=3.94, dz=topScrewDepth)
     motor.append(rmh)
@@ -68,7 +68,7 @@ def buildMotor():
     # motor.append(rsh)
 
     # bottom mounting hole
-    bmh = mesh.newCylinder(diameter=3.5, height=6)
+    bmh = mesh.newCylinder(diameter=3.5, depth=6)
     mesh.rotateMesh(bmh, XAXIS, 90)
     mesh.transposeMesh(bmh, dx=11.20, dy=3.94, dz=-topScrewDepth)
     motor.append(bmh)
@@ -109,37 +109,37 @@ def buildMotorBase():
     mounting_hole_inner_diameter = 2.6 #maybe even 2.7
 
     # left mounting hole
-    lmh = mesh.newCylinder(diameter=mounting_hole_diameter, height=mounting_hole_height)
+    lmh = mesh.newCylinder(diameter=mounting_hole_diameter, depth=mounting_hole_height)
     mesh.rotateMesh(lmh, XAXIS, 90)
     mesh.transposeMesh(lmh, dx=-mounting_hole_x, dy=mounting_hole_depth, dz=topScrewDepth)
     base.append(lmh)
 
     # left mounting inner hole
-    lmih = mesh.newCylinder(diameter=mounting_hole_inner_diameter, height=1.2 * mounting_hole_height)
+    lmih = mesh.newCylinder(diameter=mounting_hole_inner_diameter, depth=1.2 * mounting_hole_height)
     mesh.rotateMesh(lmih, XAXIS, 90)
     mesh.transposeMesh(lmih, dx=-mounting_hole_x, dy=mounting_hole_depth, dz=topScrewDepth)
     base.append(lmih)
 
     # right mounting hole
-    rmh = mesh.newCylinder(diameter=mounting_hole_diameter, height=mounting_hole_height)
+    rmh = mesh.newCylinder(diameter=mounting_hole_diameter, depth=mounting_hole_height)
     mesh.rotateMesh(rmh, XAXIS, 90)
     mesh.transposeMesh(rmh, dx=mounting_hole_x, dy=mounting_hole_depth, dz=topScrewDepth)
     base.append(rmh)
 
     # right mounting inner hole
-    rmh = mesh.newCylinder(diameter=mounting_hole_inner_diameter, height=1.2 * mounting_hole_height)
+    rmh = mesh.newCylinder(diameter=mounting_hole_inner_diameter, depth=1.2 * mounting_hole_height)
     mesh.rotateMesh(rmh, XAXIS, 90)
     mesh.transposeMesh(rmh, dx=mounting_hole_x, dy=mounting_hole_depth, dz=topScrewDepth)
     base.append(rmh)
 
     # bottom mounting hole
-    bmh = mesh.newCylinder(diameter=mounting_hole_diameter, height=mounting_hole_height)
+    bmh = mesh.newCylinder(diameter=mounting_hole_diameter, depth=mounting_hole_height)
     mesh.rotateMesh(bmh, XAXIS, 90)
     mesh.transposeMesh(bmh, dx=11.20, dy=mounting_hole_depth, dz=-topScrewDepth)
     base.append(bmh)
 
     # bottom mounting inner hole
-    bmih = mesh.newCylinder(diameter=mounting_hole_inner_diameter, height=1.2 * mounting_hole_height)
+    bmih = mesh.newCylinder(diameter=mounting_hole_inner_diameter, depth=1.2 * mounting_hole_height)
     mesh.rotateMesh(bmih, XAXIS, 90)
     mesh.transposeMesh(bmih, dx=11.20, dy=mounting_hole_depth, dz=-topScrewDepth)
     base.append(bmih)

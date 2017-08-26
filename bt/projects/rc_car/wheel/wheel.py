@@ -9,11 +9,11 @@ def build_wheel():
     axel_diameter = 4
     axel_height = 14
 
-    tire = mesh.newCylinder(diameter=tire_diameter, height=tire_height, vertCount=128)
-    tire_cutout = mesh.newCylinder(diameter=rim_diameter, height=2*tire_height, vertCount=128)
+    tire = mesh.newCylinder(diameter=tire_diameter, depth=tire_height, vertCount=128)
+    tire_cutout = mesh.newCylinder(diameter=rim_diameter, depth=2 * tire_height, vertCount=128)
     tire = mesh.fromDifference(tire, tire_cutout, remove_source_meshes=True)
 
-    axel_mount = mesh.newCylinder(diameter=axel_diameter, height=axel_height)
+    axel_mount = mesh.newCylinder(diameter=axel_diameter, depth=axel_height)
     tire = mesh.fromUnion(tire, axel_mount, remove_source_meshes=True)
 
     mesh.rotateMesh(tire, XAXIS, 90)

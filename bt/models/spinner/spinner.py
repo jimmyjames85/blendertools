@@ -11,17 +11,17 @@ def new_cat_spinner_cap(name="c_cap"):
     # whiskers
     whisker_width = 20
     w1 = mesh.newHexahedron(width=whisker_width, height=1.5, depth=2)
-    cutout = mesh.newCylinder(radius=4, height=15)
+    cutout = mesh.newCylinder(radius=4, depth=15)
     w1 = mesh.fromDifference(w1, cutout, remove_source_meshes=True)
 
     w2 = mesh.newHexahedron(width=whisker_width, height=1.5, depth=2)
     mesh.rotateMesh(w2, ZAXIS, 20)
-    cutout = mesh.newCylinder(radius=4, height=15)
+    cutout = mesh.newCylinder(radius=4, depth=15)
     w2 = mesh.fromDifference(w2, cutout, remove_source_meshes=True)
 
     w3 = mesh.newHexahedron(width=whisker_width, height=1.5, depth=2)
     mesh.rotateMesh(w3, ZAXIS, -20)
-    cutout = mesh.newCylinder(radius=4, height=15)
+    cutout = mesh.newCylinder(radius=4, depth=15)
     w3 = mesh.fromDifference(w3, cutout, remove_source_meshes=True)
 
     w = mesh.fromMeshes([w1, w2, w3], remove_source_meshes=True)

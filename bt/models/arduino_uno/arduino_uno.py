@@ -45,7 +45,7 @@ def build_arduino_uno():
     # bottom left mounting hole
     blmhCenterX = 14
     blmhCenterY = 2.5
-    blmh = mesh.newCylinder(diameter=holeDiameter, height=3 * unoDepth)
+    blmh = mesh.newCylinder(diameter=holeDiameter, depth=3 * unoDepth)
     mesh.transposeMesh(blmh,
                        dx=blmhCenterX,
                        dy=blmhCenterY)
@@ -54,7 +54,7 @@ def build_arduino_uno():
     # top left mounting hole
     tlmhCenterX = 15.3
     tlmhCenterY = 50.7
-    tlmh = mesh.newCylinder(diameter=holeDiameter, height=3 * unoDepth)
+    tlmh = mesh.newCylinder(diameter=holeDiameter, depth=3 * unoDepth)
     mesh.transposeMesh(tlmh,
                        dx=tlmhCenterX,
                        dy=tlmhCenterY)
@@ -64,7 +64,7 @@ def build_arduino_uno():
     # top right mounting hole
     trmhCenterX = 66.1
     trmhCenterY = 35.5
-    trmh = mesh.newCylinder(diameter=holeDiameter, height=3 * unoDepth)
+    trmh = mesh.newCylinder(diameter=holeDiameter, depth=3 * unoDepth)
     mesh.transposeMesh(trmh,
                        dx=trmhCenterX,
                        dy=trmhCenterY)
@@ -74,7 +74,7 @@ def build_arduino_uno():
     # bottom right mounting hole
     brmhCenterX = 66.1
     brmhCenterY = 7.6
-    brmh = mesh.newCylinder(diameter=holeDiameter, height=3 * unoDepth)
+    brmh = mesh.newCylinder(diameter=holeDiameter, depth=3 * unoDepth)
     mesh.transposeMesh(brmh,
                        dx=brmhCenterX,
                        dy=brmhCenterY)

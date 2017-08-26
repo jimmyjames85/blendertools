@@ -32,8 +32,8 @@ def build_filament_clip(filament_diameter=2.25,
     :return:
     '''
 
-    outer_clip = mesh.newCylinder(diameter=outer_clip_diameter, height=clip_height)
-    inner_clip = mesh.newCylinder(diameter=inner_clip_diameter, height=1.2 * clip_height)
+    outer_clip = mesh.newCylinder(diameter=outer_clip_diameter, depth=clip_height)
+    inner_clip = mesh.newCylinder(diameter=inner_clip_diameter, depth=1.2 * clip_height)
     clip = mesh.fromDifference(outer_clip, inner_clip, True)
     cutout = mesh.newHexahedron(width=outer_clip_diameter, height=teeth_clearance, depth=clip_height * 1.2)
 
@@ -42,8 +42,8 @@ def build_filament_clip(filament_diameter=2.25,
 
     # thickness: distance from inner clip wall  to outer clip wall
     thickness = (outer_clip_diameter - inner_clip_diameter) / 2
-    holder = mesh.newCylinder(diameter=filament_diameter + thickness, height=clip_height)
-    cutout = mesh.newCylinder(diameter=filament_diameter, height=1.2 * clip_height)
+    holder = mesh.newCylinder(diameter=filament_diameter + thickness, depth=clip_height)
+    cutout = mesh.newCylinder(diameter=filament_diameter, depth=1.2 * clip_height)
     holder = mesh.fromDifference(holder, cutout, True)
 
     mesh.transposeMesh(holder, dx=(outer_clip_diameter + filament_diameter + thickness / 4) / 2)
@@ -54,13 +54,13 @@ def build_filament_clip(filament_diameter=2.25,
 
 
 def build_spool(outer_diameter=198, inner_diameter=55, spool_width=64, spool_wall_width=4.4):
-    spool = mesh.newCylinder(diameter=outer_diameter, height=spool_width)
-    spool_hole = mesh.newCylinder(diameter=inner_diameter, height=1.2 * spool_width, addTopFace=False,
+    spool = mesh.newCylinder(diameter=outer_diameter, depth=spool_width)
+    spool_hole = mesh.newCylinder(diameter=inner_diameter, depth=1.2 * spool_width, addTopFace=False,
                                   addBottomFace=False)
     spool_solid = mesh.fromDifference(spool, spool_hole, True)
 
-    spool = mesh.newCylinder(diameter=1.2 * outer_diameter, height=spool_width - 2 * spool_wall_width)
-    spool_hole = mesh.newCylinder(diameter=1.2 * inner_diameter, height=1.2 * spool_width)
+    spool = mesh.newCylinder(diameter=1.2 * outer_diameter, depth=spool_width - 2 * spool_wall_width)
+    spool_hole = mesh.newCylinder(diameter=1.2 * inner_diameter, depth=1.2 * spool_width)
     spool_cutout = mesh.fromDifference(spool, spool_hole, True)
 
     spool = mesh.fromDifference(spool_solid, spool_cutout, True)
