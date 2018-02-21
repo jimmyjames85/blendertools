@@ -36,7 +36,8 @@ def newPrism(width, height, depth):
     me.from_pydata(verts, [], faces)
     return me
 
-
+# todo rename newHollowHexahedron
+# note this box is topless...
 def newHollowBox(width, height, depth, wallThickness):
     innerWidth = width - 2 * wallThickness
     innerHeight = height - 2 * wallThickness
@@ -126,8 +127,9 @@ def vertsEdgesFontsFromMesh(me):
 
 def codeFromObject(obj, fileloc, recenterOrigin=True):
     # example usage:
+    # from bt.mesh import codeFromObject
     # ww = bpy.data.objects['ww']
-    # mesh.codeFromObject(ww, "/tmp/ww.py")
+    # 'codeFromObject(ww, "/tmp/ww.py")
 
     verts = []
     for v in obj.data.vertices:
@@ -194,7 +196,7 @@ def extrudeMesh(theMesh, depth, removeSourceMesh=True):
 
     pass
 
-
+# todo mesh.newText scale is ambigous set it to mm
 def newText(text="", scale=1, depth=1):
     if len(text) == 0:
         raise Exception("Please provide text of length > 0")

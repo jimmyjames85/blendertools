@@ -39,9 +39,7 @@ def new_spinner_cap(name="s_cap"):
     return obj
 
 
-
-
-def new_spinner_cap_with_initial(initial, name="s_cap_i"):
+def new_spinner_cap_with_initial_mesh(initial, name="s_cap_i"):
     if len(initial) != 1:
         raise Exception("Length of initial must be 1")
 
@@ -50,7 +48,10 @@ def new_spinner_cap_with_initial(initial, name="s_cap_i"):
     mesh.recenter(ime)
     mesh.rotateMesh(ime, YAXIS, 180)
     me = mesh.fromDifference(sme, ime, remove_source_meshes=True)
+    return me
 
+def new_spinner_cap_with_initial(initial, name="s_cap_i"):
+    me = new_spinner_cap_with_initial_mesh(initial, name)
     obj = object.newObjectFromMesh(name, me)
     return obj
 
