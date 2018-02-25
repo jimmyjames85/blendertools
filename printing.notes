@@ -1,0 +1,29 @@
+PLA
+|          | First Layer | Other Layers |
+| Extruder |         210 |          210 |
+| Bed      |          55 |           55 |
+
+
+ABS
+|          | First Layer | Other Layers |
+| Extruder |         255 |          255 |
+| Bed      |          95 |           95 |
+
+
+EPA Nylon
+|          | First Layer | Other Layers |
+| Extruder |         240 |          240 |
+| Bed      |          90 |           90 |
+
+Supports
+| Overhang threshold            |          0 |
+| enforce support for the first |          0 |
+| raft layers                   |          0 |
+| contact z distance            | 0.2 layers |
+| pattern                       |    Pillars |
+| pattern spacing               |         6m |
+| pattern angle                 |          0 |
+| interface layers              |          4 |
+| interface pattern spacing     |          4 |
+| Don't support bridges         |  unchecked |
+
