@@ -14,20 +14,25 @@ import bpy
 # the size of the object and the hole - (bigger needs slightly
 # more), but generally a good rule of thumb.
 #
+# this may not be accurate, this could be affected by layer height
+#
+# https://www.3dhubs.com/knowledge-base/how-design-snap-fit-joints-3d-printing
 
 def newHinge():
     me = mesh.newHexahedron(5, 7.5, 15)
 
     # paperclip diam is 1.2mm
 
-    diam=1.2
+    diam = 1.2
 
-    sizes = {5:diam,
-             2.5:diam+0.05,
-             0:diam+0.1,
-             -2.5:diam+0.15,
-             -5:diam+0.4
+    sizes = {   5: diam + 0.2,
+              2.5: diam + 0.3,
+                0: diam + 0.4,
+             -2.5: diam + 0.5,
+               -5: diam + 0.6
              }
+
+    # we want 0.4 for clearance !!!!!!!!!!!!!!!
 
     for z in sizes:
         d = sizes[z]
@@ -36,10 +41,7 @@ def newHinge():
         mesh.transposeMesh(cy, dz=z)
         me = mesh.fromDifference(me, cy, True)
 
-
     return object.newObjectFromMesh("cubey", me)
-    pass
-
 
 # import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.hinge import hinge;
 # print('reloading...'); importlib.reload(hinge); print('loaded'); obj = hinge.main()
