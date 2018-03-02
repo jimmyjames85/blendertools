@@ -4,10 +4,6 @@ import bpy
 
 
 def newPillbox(name="pillbox"):
-    # hinges
-    # https://www.youtube.com/watch?v=7JhjhgjchfM
-    # https://www.youtube.com/watch?v=7JhjhgjchfM
-
     # dad's design
     # https://linksharing.samsungcloud.com/1499724955986CyNyPgG
     boxCount = 1
