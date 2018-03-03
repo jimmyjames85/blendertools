@@ -338,6 +338,39 @@ def newLathe(radii=None, diameters=None, heights=None, addTopFace=True, addBotto
     return me
 
 
+def newHinge(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, diaphragm=1.4, clearance=0.4, purchase=3):
+    # diaphragm 2. a thin sheet of material forming a partition. # the female must be wider than the male b/c the female requires a diaphragm >0
+    # purchase 2. a hold or position on something for applying power advantageously, or the advantage gained by such application.
+    # clearance: 3. clear space allowed for a thing to move past or under another.
+
+    # unitWidth is the visible width of each unit - it is equal to the width of the female but is only equal to the middle part of the male
+    unitWidth=2*purchase+diaphragm
+    innerRadius = innerDiam/2
+    outerRadius = outerDiam/2
+
+    me = []
+
+    mod=0 if startWithFemale else 1
+    for i in range(0, units):
+        print("%i " % (i))
+        if i % 2 == mod:
+            female = newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[purchase, 0, 2*purchase+diaphragm,diaphragm + purchase], vertCount=64)
+            transposeMesh(female, dz=purchase + (clearance + unitWidth ) * i)
+            me.append(female)
+        else:
+            male = newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[0, purchase, purchase + unitWidth, 2 * purchase + unitWidth], vertCount=64)
+            transposeMesh(male, dz=(clearance + unitWidth) * i)
+            me.append(male)
+
+    copy = fromMeshes(me)
+    x,y,z = calculate_center(copy)
+    remove(copy)
+
+    for m in me:
+        transposeMesh(m, dx=-x,dy=-y,dz=-z)
+
+    return me
+
 def recenter(me, dx=0, dy=0, dz=0):
     c = calculate_center(me)
     transposeMesh(me, dx=-c[XAXIS] + dx, dy=-c[YAXIS] + dy, dz=-c[ZAXIS] + dz)

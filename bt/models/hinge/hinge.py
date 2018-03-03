@@ -44,36 +44,14 @@ def newPaperClipHinge():
     return object.newObjectFromMesh("cubey", me)
 
 
-def newHinge(name="hinge", units=5, startWithFemale=True, innerDiam=6, outerDiam=12, diaphragm=1.4, clearance=0.4, purchase=3):
-    # diaphragm 2. a thin sheet of material forming a partition. # the female must be wider than the male b/c the female requires a diaphragm >0
-    # purchase 2. a hold or position on something for applying power advantageously, or the advantage gained by such application.
-    # clearance: 3. clear space allowed for a thing to move past or under another.
+def newHingeObj(name="hinge", units=5):
 
-    unitWidth=2*purchase+diaphragm
 
-    me = []
+    hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=6, outerDiam=12, diaphragm=1.4, clearance=0.4, purchase=3)
 
-    innerRadius = innerDiam/2
-    outerRadius = outerDiam/2
+    hinges[0]
 
-    # todo pass in number of units
-    for i in range(0, 4):
-        male = mesh.newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[0, purchase, purchase + unitWidth, 2 * purchase + unitWidth], vertCount=64)
-
-        female = mesh.newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[-diaphragm/2, -diaphragm/2-purchase , diaphragm/2 + purchase ,diaphragm/2], vertCount=64)
-        femaleWidth = 2*purchase + diaphragm
-        mesh.transposeMesh(female,dz=femaleWidth / 2 )  # transpose to zero out the starting height for the lathe
-        mesh.transposeMesh(female, dz=purchase+unitWidth+clearance)  # transpose for clearance
-
-        # unit pos
-        mesh.transposeMesh(male, dz=(2 * purchase + 2 * clearance + unitWidth + diaphragm) * i)
-        mesh.transposeMesh(female, dz=(2 * purchase + 2 * clearance + unitWidth + diaphragm) * i)
-
-        me.append(male)
-        me.append(female)
-
-    me = mesh.fromMeshes(me, True)
-
+    me = mesh.fromMeshes(hinges, True)
     return object.newObjectFromMesh(name, me)
 
 
@@ -99,4 +77,4 @@ def main():
         if obj.name == "hinge":
             object.deleteObjIfExists(obj.name)
 
-    return newHinge(units=3)
+    return newHingeObj(units=7)
