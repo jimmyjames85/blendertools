@@ -1,6 +1,6 @@
 from bt import mesh, object
 from bt.common import XAXIS, YAXIS, ZAXIS
-from math import sin, cos, radians
+from math import sin, cos, radians, floor
 import bpy
 
 
@@ -44,44 +44,37 @@ def newPaperClipHinge():
     return object.newObjectFromMesh("cubey", me)
 
 
-def newHinge(name="hinge"):
-    innerDiam = 6
-    outerDiam = 12
-    unitWidth = 6
-    clearance = 0.4  # clearance: 3. clear space allowed for a thing to move past or under another.
-    purchase = 3  # purchase 2. a hold or position on something for applying power advantageously, or the advantage gained by such application.
-    diaphragm = 1.4 # diaphragm 2. a thin sheet of material forming a partition. # the female must be wider than the male b/c the female requires a diaphragm >0
+def newHinge(name="hinge", units=5, startWithFemale=True, innerDiam=6, outerDiam=12, diaphragm=1.4, clearance=0.4, purchase=3):
+    # diaphragm 2. a thin sheet of material forming a partition. # the female must be wider than the male b/c the female requires a diaphragm >0
+    # purchase 2. a hold or position on something for applying power advantageously, or the advantage gained by such application.
+    # clearance: 3. clear space allowed for a thing to move past or under another.
 
+    unitWidth=2*purchase+diaphragm
 
     me = []
 
+    innerRadius = innerDiam/2
+    outerRadius = outerDiam/2
+
     # todo pass in number of units
     for i in range(0, 4):
+        male = mesh.newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[0, purchase, purchase + unitWidth, 2 * purchase + unitWidth], vertCount=64)
 
-        male = mesh.newLathe(radii=[innerDiam/2, outerDiam/2,outerDiam/2,innerDiam/2], heights=[0, purchase, purchase+unitWidth, 2*purchase+unitWidth], vertCount=64)
-
-        femaleWidth = unitWidth + diaphragm
-        female = mesh.newLathe(radii=[innerDiam/2, outerDiam/2,outerDiam/2,innerDiam/2], heights=[-femaleWidth/2+purchase, -femaleWidth/2, femaleWidth/2, femaleWidth/2-purchase], vertCount=64)
-        mesh.transposeMesh(female, dz=femaleWidth/2-purchase) # transpose to 0 out the starting height for the lathe
-        mesh.transposeMesh(female, dz=2*(unitWidth)+clearance) # transpose for clearance
-
+        female = mesh.newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[-diaphragm/2, -diaphragm/2-purchase , diaphragm/2 + purchase ,diaphragm/2], vertCount=64)
+        femaleWidth = 2*purchase + diaphragm
+        mesh.transposeMesh(female,dz=femaleWidth / 2 )  # transpose to zero out the starting height for the lathe
+        mesh.transposeMesh(female, dz=purchase+unitWidth+clearance)  # transpose for clearance
 
         # unit pos
-        mystery = 1.8 # todo what the hell is this myster
-        mesh.transposeMesh(male, dz=(2*purchase+unitWidth + mystery + clearance)*i)
-        mesh.transposeMesh(female, dz=(2*purchase+unitWidth+mystery + clearance)*i)
+        mesh.transposeMesh(male, dz=(2 * purchase + 2 * clearance + unitWidth + diaphragm) * i)
+        mesh.transposeMesh(female, dz=(2 * purchase + 2 * clearance + unitWidth + diaphragm) * i)
 
         me.append(male)
         me.append(female)
 
-
-
     me = mesh.fromMeshes(me, True)
 
-
-
     return object.newObjectFromMesh(name, me)
-
 
 
 # import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.hinge import hinge;
@@ -102,8 +95,8 @@ def main():
 
     # delete all objects
     for obj in bpy.data.objects:
-        print (obj.name)
+        print(obj.name)
         if obj.name == "hinge":
             object.deleteObjIfExists(obj.name)
 
-    return newHinge()
+    return newHinge(units=3)
