@@ -46,14 +46,62 @@ def newPaperClipHinge():
 
 def newHingeObj(name="hinge", units=5):
 
+    scale = 1
 
-    hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=6, outerDiam=12, diaphragm=1.4, clearance=0.4, purchase=3)
+    handleLength=30*scale
+    unitDepth = 6.8*scale
+    innerDiam=6*scale
+    outerDiam=12*scale
+    purchase = 2.7*scale
+    clearance=0.4
 
-    hinges[0]
+    editMode = False # todo rm
 
-    me = mesh.fromMeshes(hinges, True)
+    handles = []
+    hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
+    for i, h in enumerate(hinges):
+        x,y,z = mesh.calculate_center(h)
+        handle = mesh.newHexahedron(depth=unitDepth, width=handleLength, height=outerDiam)
+
+        if i%2==0:
+            #male
+            mesh.transposeMesh(handle, dx=handleLength/2, dz=z)
+            handle = mesh.fromUnion(h, handle, True)
+            if editMode:
+                mesh.transposeMesh(handle,dx=20)
+        else:
+            #female
+            mesh.transposeMesh(handle, dx=-handleLength/2, dz=z)
+            cutout = mesh.newCylinder(diameter=1.0001*outerDiam, depth=unitDepth*2)
+            mesh.transposeMesh(cutout, dx=x, dy=y, dz=z)
+            handle = mesh.fromDifference(handle, cutout, True)
+            handle = mesh.fromMeshes([handle, h],True)
+
+        handles.append(handle)
+
+
+    if not editMode:
+        topHandle = mesh.newHexahedron(height=outerDiam, width=outerDiam/2, depth=5.5*unitDepth)
+        mesh.transposeMesh(topHandle, dx=-handleLength+outerDiam/4)
+        handles.append(topHandle)
+
+        btmHandle = mesh.newHexahedron(height=outerDiam, width=outerDiam/2, depth=7.5*unitDepth)
+        mesh.transposeMesh(btmHandle, dx=handleLength-outerDiam/4)
+        handles.append(btmHandle)
+
+    me = mesh.fromMeshes(handles, True)
+
+    if not editMode:
+        mesh.rotateMesh(me, XAXIS, 90)
+
+
     return object.newObjectFromMesh(name, me)
 
+
+# no need for console any more, use F5 to create new refresh by doing the following:
+# https://blender.stackexchange.com/questions/34722/global-keyboard-shortcut-to-execute-text-editor-script
+#
+# Alt+F10 for fullscreen in 3D view and then F5 to refresh
 
 # import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.hinge import hinge;
 # print('reloading...'); importlib.reload(hinge); print('loaded'); obj = hinge.main()

@@ -338,13 +338,17 @@ def newLathe(radii=None, diameters=None, heights=None, addTopFace=True, addBotto
     return me
 
 
-def newHinge(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, diaphragm=1.4, clearance=0.4, purchase=3):
+def newHinge(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, unitDepth=6.8, clearance=0.4, purchase=2.7):
     # diaphragm 2. a thin sheet of material forming a partition. # the female must be wider than the male b/c the female requires a diaphragm >0
     # purchase 2. a hold or position on something for applying power advantageously, or the advantage gained by such application.
     # clearance: 3. clear space allowed for a thing to move past or under another.
 
-    # unitWidth is the visible width of each unit - it is equal to the width of the female but is only equal to the middle part of the male
-    unitWidth=2*purchase+diaphragm
+    # unitDepth is the visible width of each unit - it is equal to the width of the female but is only equal to the middle part of the male
+
+    diaphragm = unitDepth - 2 * purchase
+    if diaphragm<0:
+        raise Exception("unitDepth must be greater than (2*purchase)")
+
     innerRadius = innerDiam/2
     outerRadius = outerDiam/2
 
@@ -352,14 +356,13 @@ def newHinge(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, diaphragm
 
     mod=0 if startWithFemale else 1
     for i in range(0, units):
-        print("%i " % (i))
         if i % 2 == mod:
             female = newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[purchase, 0, 2*purchase+diaphragm,diaphragm + purchase], vertCount=64)
-            transposeMesh(female, dz=purchase + (clearance + unitWidth ) * i)
+            transposeMesh(female, dz=purchase + (clearance + unitDepth) * i)
             me.append(female)
         else:
-            male = newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[0, purchase, purchase + unitWidth, 2 * purchase + unitWidth], vertCount=64)
-            transposeMesh(male, dz=(clearance + unitWidth) * i)
+            male = newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[0, purchase, purchase + unitDepth, 2 * purchase + unitDepth], vertCount=64)
+            transposeMesh(male, dz=(clearance + unitDepth) * i)
             me.append(male)
 
     copy = fromMeshes(me)
@@ -405,11 +408,11 @@ def rotateMesh(theMesh, axis, deg):
 
 def scaleMesh(theMesh, sx=1, sy=1, sz=1):
     tmpObj = object.newObjectFromMesh("tempForScale", theMesh)
-    tmpObj.scale[XAXIS] = sx
     tmpObj.scale[YAXIS] = sy
     tmpObj.scale[ZAXIS] = sz
     object.selectNone()
     tmpObj.select = True
+    tmpObj.scale[XAXIS] = sx
     bpy.ops.object.transform_apply(scale=True)
     tmpMesh = fromObject(tmpObj)
 
