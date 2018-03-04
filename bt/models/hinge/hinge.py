@@ -2,7 +2,7 @@ from bt import mesh, object
 from bt.common import XAXIS, YAXIS, ZAXIS
 from math import sin, cos, radians, floor
 import bpy
-
+import bmesh
 
 #
 # Just so you know, You should always size your holes with proper
@@ -43,19 +43,18 @@ def newPaperClipHinge():
 
     return object.newObjectFromMesh("cubey", me)
 
+def newHingeObj(name="hinge"):
 
-def newHingeObj(name="hinge", units=5):
 
-    scale = 1
-
-    handleLength=30*scale
-    unitDepth = 6.8*scale
-    innerDiam=6*scale
-    outerDiam=12*scale
-    purchase = 2.7*scale
+    # hinge
+    scale = 0.3125
+    handleLength=30 *scale
+    unitDepth = 6 *scale
+    innerDiam=6 *scale
+    outerDiam=12 *scale
+    purchase = 2 *scale
     clearance=0.4
-
-    editMode = False # todo rm
+    units = 7
 
     handles = []
     hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
@@ -67,8 +66,6 @@ def newHingeObj(name="hinge", units=5):
             #male
             mesh.transposeMesh(handle, dx=handleLength/2, dz=z)
             handle = mesh.fromUnion(h, handle, True)
-            if editMode:
-                mesh.transposeMesh(handle,dx=20)
         else:
             #female
             mesh.transposeMesh(handle, dx=-handleLength/2, dz=z)
@@ -80,19 +77,84 @@ def newHingeObj(name="hinge", units=5):
         handles.append(handle)
 
 
-    if not editMode:
-        topHandle = mesh.newHexahedron(height=outerDiam, width=outerDiam/2, depth=5.5*unitDepth)
-        mesh.transposeMesh(topHandle, dx=-handleLength+outerDiam/4)
-        handles.append(topHandle)
 
-        btmHandle = mesh.newHexahedron(height=outerDiam, width=outerDiam/2, depth=7.5*unitDepth)
-        mesh.transposeMesh(btmHandle, dx=handleLength-outerDiam/4)
-        handles.append(btmHandle)
+    topHandle = mesh.newHexahedron(height=outerDiam, width=outerDiam/2, depth=5.5*unitDepth)
+    mesh.transposeMesh(topHandle, dx=-handleLength+outerDiam/4)
+    handles.append(topHandle)
+
+    btmHandle = mesh.newHexahedron(height=outerDiam, width=outerDiam/2, depth=7.5*unitDepth)
+    mesh.transposeMesh(btmHandle, dx=handleLength-outerDiam/4)
+    handles.append(btmHandle)
 
     me = mesh.fromMeshes(handles, True)
+    mesh.rotateMesh(me, XAXIS, 90)
+    mesh.makeNormalsConsistent(me)
 
-    if not editMode:
-        mesh.rotateMesh(me, XAXIS, 90)
+
+    return object.newObjectFromMesh(name, me)
+
+def newPillBox(name="pillbox"):
+
+    # cell
+    cellWidth = 40
+    cellHeight = 30
+    cellDepth = 20
+    cellWallThickness = 1.2
+
+    # hinge
+    unitDepth = 2.125
+    innerDiam=1.875
+    outerDiam=3.75
+    purchase = 0.84375
+    clearance=0.4
+    units = 15
+
+    cell = mesh.newHollowBox(width=cellWidth, height=cellHeight, depth=cellDepth, wallThickness=cellWallThickness)
+
+    hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
+    mesh.rotateMeshes(hinges, XAXIS, 90)
+    mesh.rotateMeshes(hinges, ZAXIS, 90)
+    mesh.transposeMeshes(hinges, dy= (cellHeight)/2, dz=(cellDepth+outerDiam)/2 )
+
+    # handles are what attach the hinge to the pillbox
+    handles = []
+    for i, h in enumerate(hinges):
+        x,y,z = mesh.calculate_center(h)
+
+
+        if i%2==0:
+            # male
+            handle = mesh.newHexahedron(depth=outerDiam + cellDepth, width=unitDepth, height=outerDiam)
+            mesh.transposeMesh(handle, dx=x, dy=y, dz=(outerDiam+cellDepth)/2)
+            # handle = mesh.fromUnion(h, handle, True)
+            handles.append(handle)
+
+            #
+            #
+            pass
+        else:
+            #female
+            # mesh.transposeMesh(handle, dx=-handleLength/2, dz=z)
+            # cutout = mesh.newCylinder(diameter=1.0001*outerDiam, depth=unitDepth*2)
+            # mesh.transposeMesh(cutout, dx=x, dy=y, dz=z)
+            # handle = mesh.fromDifference(handle, cutout, True)
+            # handle = mesh.fromMeshes([handle, h],True)
+            pass
+
+
+    hndls = mesh.fromMeshes(handles, True)
+
+    # me = mesh.fromMeshes(handles, True)
+    me = mesh.fromMeshes(hinges, True)
+
+
+    me = mesh.fromMeshes([me, hndls], True)
+    # mesh.rotateMesh(me, XAXIS, 90)
+    # mesh.rotateMesh(me, ZAXIS, 90)
+
+    me = mesh.fromMeshes([me, cell],True)
+
+    mesh.makeNormalsConsistent(me)
 
 
     return object.newObjectFromMesh(name, me)
@@ -122,7 +184,8 @@ def main():
     # delete all objects
     for obj in bpy.data.objects:
         print(obj.name)
-        if obj.name == "hinge":
+        if obj.name == "hinge" or obj.name=="pillbox":
             object.deleteObjIfExists(obj.name)
 
-    return newHingeObj(units=7)
+
+    return newPillBox()

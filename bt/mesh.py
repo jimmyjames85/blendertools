@@ -335,7 +335,15 @@ def newLathe(radii=None, diameters=None, heights=None, addTopFace=True, addBotto
     me = bpy.data.meshes.new("lathe")
     me.from_pydata(verts, [], faces)
 
+
     return me
+
+def makeNormalsConsistent(me):
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(me)
+    bm.free()
 
 
 def newHinge(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, unitDepth=6.8, clearance=0.4, purchase=2.7):
@@ -365,10 +373,10 @@ def newHinge(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, unitDepth
             transposeMesh(male, dz=(clearance + unitDepth) * i)
             me.append(male)
 
+    # center at 0,0,0
     copy = fromMeshes(me)
     x,y,z = calculate_center(copy)
     remove(copy)
-
     for m in me:
         transposeMesh(m, dx=-x,dy=-y,dz=-z)
 
@@ -389,6 +397,10 @@ def transposeMesh(theMesh, dx=None, dy=None, dz=None):
             v.co[ZAXIS] += dz
 
 
+def transposeMeshes(meshes, dx=None, dy=None, dz=None):
+    for me in meshes:
+        transposeMesh(me, dx,dy,dz)
+
 def rotateMesh(theMesh, axis, deg):
     tmpObj = object.newObjectFromMesh("tempForRotate", theMesh)
     object.rotateObj(obj=tmpObj, axis=axis, deg=deg)
@@ -405,6 +417,9 @@ def rotateMesh(theMesh, axis, deg):
     bpy.data.objects.remove(tmpObj, do_unlink=True)
     bpy.data.meshes.remove(tmpMesh, do_unlink=True)
 
+def rotateMeshes(meshes, axis, deg):
+    for me in meshes:
+        rotateMesh(me, axis, deg)
 
 def scaleMesh(theMesh, sx=1, sy=1, sz=1):
     tmpObj = object.newObjectFromMesh("tempForScale", theMesh)
