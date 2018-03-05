@@ -4,6 +4,49 @@ from math import sin, cos, radians, floor
 import bpy
 import bmesh
 
+
+
+# no need for console any more, use F5 to create new refresh by doing the following:
+# https://blender.stackexchange.com/questions/34722/global-keyboard-shortcut-to-execute-text-editor-script
+#
+# Alt+F10 for fullscreen in 3D view and then F5 to refresh
+#
+# User Preferences -> 3D View -> 3D View (Global) -> Add New
+# Name: view3d.global_script_runner
+# Key: F10 (or whatever you like)
+#
+# Paste the following into the text editor pane and run the script once
+#
+# import bpy
+#
+#
+# class GlobalScriptRunner(bpy.types.Operator):
+#     """Tooltip"""
+#     bl_idname = "view3d.global_script_runner"
+#     bl_label = "Global Script Runner"
+#
+#     #@classmethod
+#     #def poll(cls, context):
+#     #    return context.active_object is not None
+#
+#     def execute(self, context):
+#         import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.hinge import hinge;
+#         print('reloading...'); importlib.reload(hinge); print('loaded'); obj = hinge.main()
+#         return {'FINISHED'}
+#
+#
+# def register():
+#     bpy.utils.register_class(GlobalScriptRunner)
+#
+#
+# def unregister():
+#     bpy.utils.unregister_class(GlobalScriptRunner)
+#
+#
+# if __name__ == "__main__":
+#     register()
+
+
 #
 # Just so you know, You should always size your holes with proper
 # clearance in your models. A 20mm hole for a 20mm part is a "size
@@ -112,58 +155,60 @@ def newPillBox(name="pillbox"):
     cell = mesh.newHollowBox(width=cellWidth, height=cellHeight, depth=cellDepth, wallThickness=cellWallThickness)
 
     hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
-    mesh.rotateMeshes(hinges, XAXIS, 90)
-    mesh.rotateMeshes(hinges, ZAXIS, 90)
-    mesh.transposeMeshes(hinges, dy= (cellHeight)/2, dz=(cellDepth+outerDiam)/2 )
+    mesh.rotateMeshes(hinges, YAXIS, 90)
+    mesh.transposeMeshes(hinges, dy= (cellHeight+outerDiam)/2 -cellWallThickness , dz=(cellDepth+outerDiam)/2 + clearance)
+
+    lid = mesh.newHexahedron(width=cellWidth, depth=cellHeight-cellWallThickness-2*clearance, height=outerDiam)
+    mesh.transposeMesh(lid, dy=(cellHeight+outerDiam)/2 -cellWallThickness, dz=(clearance + (cellDepth+outerDiam)/2 + (cellHeight-cellWallThickness)/2 + outerDiam/2 ) )
+
+    back = mesh.newHexahedron(width=cellWidth, depth=cellDepth, height=outerDiam)
+    mesh.transposeMesh(back, dy=(cellHeight+outerDiam)/2 -cellWallThickness)
+
 
     # handles are what attach the hinge to the pillbox
     handles = []
     for i, h in enumerate(hinges):
         x,y,z = mesh.calculate_center(h)
-
-
         if i%2==0:
             # male
-            handle = mesh.newHexahedron(depth=outerDiam + cellDepth, width=unitDepth, height=outerDiam)
-            mesh.transposeMesh(handle, dx=x, dy=y, dz=(outerDiam+cellDepth)/2)
-            # handle = mesh.fromUnion(h, handle, True)
-            handles.append(handle)
-
-            #
-            #
-            pass
+            handle = mesh.newHexahedron(depth=cellHeight+outerDiam/2-cellWallThickness-clearance, width=unitDepth, height=outerDiam)
+            mesh.transposeMesh(handle, dx=x, dy=y, dz=z+((cellHeight+(outerDiam/2)-cellWallThickness-clearance)/2))
         else:
-            #female
-            # mesh.transposeMesh(handle, dx=-handleLength/2, dz=z)
-            # cutout = mesh.newCylinder(diameter=1.0001*outerDiam, depth=unitDepth*2)
-            # mesh.transposeMesh(cutout, dx=x, dy=y, dz=z)
-            # handle = mesh.fromDifference(handle, cutout, True)
-            # handle = mesh.fromMeshes([handle, h],True)
-            pass
+            handle = mesh.newHexahedron(depth=outerDiam/2 + cellDepth+clearance, width=unitDepth, height=outerDiam)
+            mesh.transposeMesh(handle, dx=x, dy=y, dz=z-(cellDepth+clearance)/2 - outerDiam/4)
+
+        cutout = mesh.newCylinder(diameter=outerDiam, depth=3*unitDepth)
+        mesh.rotateMesh(cutout, YAXIS, 90)
+        mesh.transposeMesh(cutout, dx=x,dy=y,dz=z)
+        handle = mesh.fromDifference(handle, cutout, True)
+
+        handles.append(handle)
 
 
-    hndls = mesh.fromMeshes(handles, True)
 
-    # me = mesh.fromMeshes(handles, True)
-    me = mesh.fromMeshes(hinges, True)
+    me = mesh.fromMeshes(hinges + [cell,lid, back] + handles,True)
 
 
-    me = mesh.fromMeshes([me, hndls], True)
-    # mesh.rotateMesh(me, XAXIS, 90)
-    # mesh.rotateMesh(me, ZAXIS, 90)
+    mesh.rotateMesh(me, XAXIS, -90)
+    mesh.transposeMesh(me, dz=cellHeight/2+outerDiam-cellWallThickness)
 
-    me = mesh.fromMeshes([me, cell],True)
+    cutout=mesh.newHexahedron(70,25,70)
+    mesh.transposeMesh(cutout, dy=37)
+    me=mesh.fromDifference(me,cutout,True)
+
+
+    cutout=mesh.newHexahedron(70,25,70)
+    mesh.transposeMesh(cutout, dy=-13)
+    me=mesh.fromDifference(me,cutout,True)
+
 
     mesh.makeNormalsConsistent(me)
+
 
 
     return object.newObjectFromMesh(name, me)
 
 
-# no need for console any more, use F5 to create new refresh by doing the following:
-# https://blender.stackexchange.com/questions/34722/global-keyboard-shortcut-to-execute-text-editor-script
-#
-# Alt+F10 for fullscreen in 3D view and then F5 to refresh
 
 # import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.hinge import hinge;
 # print('reloading...'); importlib.reload(hinge); print('loaded'); obj = hinge.main()

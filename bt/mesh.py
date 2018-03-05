@@ -349,6 +349,7 @@ def makeNormalsConsistent(me):
 def newHinge(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, unitDepth=6.8, clearance=0.4, purchase=2.7):
     # diaphragm 2. a thin sheet of material forming a partition. # the female must be wider than the male b/c the female requires a diaphragm >0
     # purchase 2. a hold or position on something for applying power advantageously, or the advantage gained by such application.
+    # todo rename purchase: it represents the width of the tappered cone, and actual width of purchase is less (my hunch actual purchase=purchase - 2*clearance)
     # clearance: 3. clear space allowed for a thing to move past or under another.
 
     # unitDepth is the visible width of each unit - it is equal to the width of the female but is only equal to the middle part of the male
