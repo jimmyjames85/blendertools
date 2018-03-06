@@ -156,13 +156,22 @@ def newPillBox(name="pillbox"):
 
     hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
     mesh.rotateMeshes(hinges, YAXIS, 90)
-    mesh.transposeMeshes(hinges, dy= (cellHeight+outerDiam)/2 -cellWallThickness , dz=(cellDepth+outerDiam)/2 + clearance)
+    hingeY = (cellHeight + outerDiam) / 2 - cellWallThickness
+    hingeZ = (cellDepth + outerDiam) / 2 + clearance
+    mesh.transposeMeshes(hinges, dy=hingeY, dz=hingeZ)
 
-    lid = mesh.newHexahedron(width=cellWidth, depth=cellHeight-cellWallThickness-2*clearance, height=outerDiam)
-    mesh.transposeMesh(lid, dy=(cellHeight+outerDiam)/2 -cellWallThickness, dz=(clearance + (cellDepth+outerDiam)/2 + (cellHeight-cellWallThickness)/2 + outerDiam/2 ) )
+    lidHeight = cellHeight - cellWallThickness + clearance
+    lid = mesh.newHexahedron(width=cellWidth, depth=lidHeight, height=outerDiam)
+    lid_hinge_clearance = outerDiam / 2 + clearance
+    mesh.transposeMesh(lid, dy=hingeY , dz=hingeZ + lidHeight / 2 + lid_hinge_clearance)
+
+    # closed lid
+    # mesh.rotateMesh(lid, XAXIS, 90)
+    # w,h,d = mesh.calculate_dimensions(lid)
+    # mesh.transposeMesh(lid, dy=h)
 
     back = mesh.newHexahedron(width=cellWidth, depth=cellDepth, height=outerDiam)
-    mesh.transposeMesh(back, dy=(cellHeight+outerDiam)/2 -cellWallThickness)
+    mesh.transposeMesh(back, dy=hingeY)
 
 
     # handles are what attach the hinge to the pillbox
@@ -171,8 +180,9 @@ def newPillBox(name="pillbox"):
         x,y,z = mesh.calculate_center(h)
         if i%2==0:
             # male
-            handle = mesh.newHexahedron(depth=cellHeight+outerDiam/2-cellWallThickness-clearance, width=unitDepth, height=outerDiam)
-            mesh.transposeMesh(handle, dx=x, dy=y, dz=z+((cellHeight+(outerDiam/2)-cellWallThickness-clearance)/2))
+            handleHeight = lidHeight + lid_hinge_clearance
+            handle = mesh.newHexahedron(depth=handleHeight, width=unitDepth, height=outerDiam)
+            mesh.transposeMesh(handle, dx=x, dy=y, dz=z + handleHeight / 2)
         else:
             handle = mesh.newHexahedron(depth=outerDiam/2 + cellDepth+clearance, width=unitDepth, height=outerDiam)
             mesh.transposeMesh(handle, dx=x, dy=y, dz=z-(cellDepth+clearance)/2 - outerDiam/4)
@@ -187,25 +197,12 @@ def newPillBox(name="pillbox"):
 
 
     me = mesh.fromMeshes(hinges + [cell,lid, back] + handles,True)
-
-
-    mesh.rotateMesh(me, XAXIS, -90)
-    mesh.transposeMesh(me, dz=cellHeight/2+outerDiam-cellWallThickness)
-
-    cutout=mesh.newHexahedron(70,25,70)
-    mesh.transposeMesh(cutout, dy=37)
-    me=mesh.fromDifference(me,cutout,True)
-
-
-    cutout=mesh.newHexahedron(70,25,70)
-    mesh.transposeMesh(cutout, dy=-13)
-    me=mesh.fromDifference(me,cutout,True)
-
+    # PRINT
+    # mesh.rotateMesh(me, XAXIS, -90)
+    # mesh.transposeMesh(me, dz=cellHeight/2+outerDiam-cellWallThickness)
+    # PRINT
 
     mesh.makeNormalsConsistent(me)
-
-
-
     return object.newObjectFromMesh(name, me)
 
 

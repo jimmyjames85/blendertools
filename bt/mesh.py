@@ -505,8 +505,7 @@ def fromBoolean(m1, m2, operation="DIFFERENCE", remove_source_meshes=False):
 
     return newMesh
 
-
-def calculate_center(m):
+def _mesh_info(m):
     count = len(m.vertices)
     if count == 0:
         raise Exception("No vertices in mesh")
@@ -543,8 +542,25 @@ def calculate_center(m):
         if z > z_max:
             z_max = z
 
-    return ((x_min + x_max) / 2, (y_min + y_max) / 2, (z_min + z_max) / 2)
+    # dimensions
+    width = x_max - x_min
+    height = y_max - y_min
+    depth = z_max - z_min
 
+    # centers
+    cx = (x_min + x_max) / 2
+    cy = (y_min + y_max) / 2
+    cz = (z_min + z_max) / 2
+
+    return (width, height, depth, cx, cy, cz)
+
+def calculate_center(m):
+    _,_,_,cx,cy,cz = _mesh_info(m)
+    return cx,cy,cz
+
+def calculate_dimensions(m):
+    w,h,d,_,_,_ = _mesh_info(m)
+    return w,h,d
 
 def fromIntersection(m1, m2, remove_source_meshes=False):
     return fromBoolean(m1, m2, operation="INTERSECT", remove_source_meshes=remove_source_meshes)
