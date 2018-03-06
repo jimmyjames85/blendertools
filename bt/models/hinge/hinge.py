@@ -4,8 +4,6 @@ from math import sin, cos, radians, floor
 import bpy
 import bmesh
 
-
-
 # no need for console any more, use F5 to create new refresh by doing the following:
 # https://blender.stackexchange.com/questions/34722/global-keyboard-shortcut-to-execute-text-editor-script
 #
@@ -162,10 +160,11 @@ def newPillBox(name="pillbox"):
 
     lidHeight = cellHeight - cellWallThickness + clearance
     lid = mesh.newHexahedron(width=cellWidth, depth=lidHeight, height=outerDiam)
-    lid_hinge_clearance = outerDiam / 2 + clearance
+    lid_hinge_clearance = outerDiam / 2 + clearance # todo this is not really the clearance between the lid and the hinge
     mesh.transposeMesh(lid, dy=hingeY , dz=hingeZ + lidHeight / 2 + lid_hinge_clearance)
 
     # closed lid
+    # todo mesh.rotate_about which is the same as rotate around cursor
     # mesh.rotateMesh(lid, XAXIS, 90)
     # w,h,d = mesh.calculate_dimensions(lid)
     # mesh.transposeMesh(lid, dy=h)
@@ -194,8 +193,6 @@ def newPillBox(name="pillbox"):
 
         handles.append(handle)
 
-
-
     me = mesh.fromMeshes(hinges + [cell,lid, back] + handles,True)
     # PRINT
     # mesh.rotateMesh(me, XAXIS, -90)
@@ -204,8 +201,6 @@ def newPillBox(name="pillbox"):
 
     mesh.makeNormalsConsistent(me)
     return object.newObjectFromMesh(name, me)
-
-
 
 # import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.hinge import hinge;
 # print('reloading...'); importlib.reload(hinge); print('loaded'); obj = hinge.main()
