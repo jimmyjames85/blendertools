@@ -1,6 +1,6 @@
-from bt import mesh, object
+from bt import mesh, object, common
 from bt.common import XAXIS, YAXIS, ZAXIS
-from math import sin, cos, radians, floor
+from math import sin, cos, tan, asin, acos, atan, sqrt, radians, degrees, floor
 import bpy
 import bmesh
 
@@ -14,33 +14,23 @@ import bmesh
 # Key: F10 (or whatever you like)
 #
 # Paste the following into the text editor pane and run the script once
-#
+
 # import bpy
-#
-#
 # class GlobalScriptRunner(bpy.types.Operator):
 #     """Tooltip"""
 #     bl_idname = "view3d.global_script_runner"
 #     bl_label = "Global Script Runner"
-#
 #     #@classmethod
 #     #def poll(cls, context):
 #     #    return context.active_object is not None
-#
 #     def execute(self, context):
 #         import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.hinge import hinge;
 #         print('reloading...'); importlib.reload(hinge); print('loaded'); obj = hinge.main()
 #         return {'FINISHED'}
-#
-#
 # def register():
 #     bpy.utils.register_class(GlobalScriptRunner)
-#
-#
 # def unregister():
 #     bpy.utils.unregister_class(GlobalScriptRunner)
-#
-#
 # if __name__ == "__main__":
 #     register()
 
@@ -100,7 +90,7 @@ def newHingeObj(name="hinge"):
     handles = []
     hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
     for i, h in enumerate(hinges):
-        x,y,z = mesh.calculate_center(h)
+        x,y,z = mesh.calculate_center_of_bounding_box(h)
         handle = mesh.newHexahedron(depth=unitDepth, width=handleLength, height=outerDiam)
 
         if i%2==0:
@@ -154,6 +144,7 @@ def newPillBox(name="pillbox"):
 
     hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
     mesh.rotateMeshes(hinges, YAXIS, 90)
+
     hingeY = (cellHeight + outerDiam) / 2 - cellWallThickness
     hingeZ = (cellDepth + outerDiam) / 2 + clearance
     mesh.transposeMeshes(hinges, dy=hingeY, dz=hingeZ)
@@ -176,7 +167,7 @@ def newPillBox(name="pillbox"):
     # handles are what attach the hinge to the pillbox
     handles = []
     for i, h in enumerate(hinges):
-        x,y,z = mesh.calculate_center(h)
+        x,y,z = mesh.calculate_center_of_bounding_box(h)
         if i%2==0:
             # male
             handleHeight = lidHeight + lid_hinge_clearance
@@ -200,7 +191,11 @@ def newPillBox(name="pillbox"):
     # PRINT
 
     mesh.makeNormalsConsistent(me)
+
+    #mesh.rotate(me, XAXIS, 15)
+
     return object.newObjectFromMesh(name, me)
+
 
 # import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.hinge import hinge;
 # print('reloading...'); importlib.reload(hinge); print('loaded'); obj = hinge.main()
@@ -221,8 +216,7 @@ def main():
     # delete all objects
     for obj in bpy.data.objects:
         print(obj.name)
-        if obj.name == "hinge" or obj.name=="pillbox":
+        if obj.name == "hinge" or obj.name=="pillbox" or obj.name=="345_triangle":
             object.deleteObjIfExists(obj.name)
-
 
     return newPillBox()

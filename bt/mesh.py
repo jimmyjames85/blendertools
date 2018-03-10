@@ -1,8 +1,8 @@
 import bpy
 import bmesh
-from math import sin, cos, radians
+from math import sin, cos, tan, asin, acos, atan, sqrt, radians, degrees
 from bt import object
-from bt.common import XAXIS, YAXIS, ZAXIS
+from bt.common import XAXIS, YAXIS, ZAXIS, CLOCKWISE, COUNTER_CLOCKWISE
 
 
 def remove(m, do_unlink=True):
@@ -11,8 +11,9 @@ def remove(m, do_unlink=True):
 
 def newFrame(width, height, depth, borderWidth, borderHeight):
     me = newHexahedron(width=width, height=height, depth=depth)
-    cutout = newHexahedron(width=(width-borderWidth), height=(height-borderHeight), depth=depth*3)
+    cutout = newHexahedron(width=(width - borderWidth), height=(height - borderHeight), depth=depth * 3)
     return fromDifference(me, cutout, True)
+
 
 def newPrism(width, height, depth):
     verts = []
@@ -35,6 +36,7 @@ def newPrism(width, height, depth):
     me = bpy.data.meshes.new("prism")
     me.from_pydata(verts, [], faces)
     return me
+
 
 # todo rename newHollowHexahedron
 # note this box is topless...
@@ -125,6 +127,7 @@ def vertsEdgesFontsFromMesh(me):
 
     return (verts, edges, faces)
 
+
 def codeFromObject(obj, fileloc, recenterOrigin=True):
     # example usage:
     # from bt.mesh import codeFromObject
@@ -135,18 +138,18 @@ def codeFromObject(obj, fileloc, recenterOrigin=True):
     for v in obj.data.vertices:
         verts.append([v.co[XAXIS], v.co[YAXIS], v.co[ZAXIS]])
 
-    faces=[]
+    faces = []
     for srcFace in obj.data.polygons:
         face = ()
         for vi in srcFace.vertices:
-            face += (vi, )
+            face += (vi,)
         faces.append(face)
 
-    code = ("def new_%s(name=\"%s\"):\n" % ( obj.name, obj.name))
+    code = ("def new_%s(name=\"%s\"):\n" % (obj.name, obj.name))
     code += "\tverts = [\n"
     for i, v in enumerate(verts):
         code += ("\t\t%s" % v)
-        if i<=len(verts)-1:
+        if i <= len(verts) - 1:
             code += ", "
         code += "\n"
     code += "\t\t]\n"
@@ -154,7 +157,7 @@ def codeFromObject(obj, fileloc, recenterOrigin=True):
     code += "\tfaces = [\n"
     for i, f in enumerate(faces):
         code += ("\t\t%s" % str(f))
-        if i<len(faces) -1:
+        if i < len(faces) - 1:
             code += ", "
         code += "\n"
     code += "\t\t]\n\n"
@@ -172,7 +175,6 @@ def codeFromObject(obj, fileloc, recenterOrigin=True):
 
 
 def extrudeMesh(theMesh, depth, removeSourceMesh=True):
-
     bm = bmesh.new()
     bm.from_mesh(theMesh)
 
@@ -195,6 +197,7 @@ def extrudeMesh(theMesh, depth, removeSourceMesh=True):
     return me
 
     pass
+
 
 # todo mesh.newText scale is ambigous set it to mm
 def newText(text="", scale=1, depth=1):
@@ -232,6 +235,28 @@ def newText(text="", scale=1, depth=1):
     bpy.data.curves.remove(tmpCurve, do_unlink=True)
     bpy.data.objects.remove(tmpObj, do_unlink=True)
     bpy.data.meshes.remove(tmpMesh, do_unlink=True)
+    return me
+
+
+def newCircle(radius=None, diameter=None, vertCount=32, z=0):
+    if not ((radius is None) ^ (diameter is None)):
+        raise Exception("Please define exactly one of radius or diameter")
+    if diameter:
+        radius = diameter / 2.0
+
+    verts = []
+    # create verts
+    for step in range(0, vertCount):
+        deg = step * 360 / vertCount
+        x = radius * cos(radians(deg))
+        y = radius * sin(radians(deg))
+        print("circle: (%0.04f, %0.04f)" % (x, y))
+        verts.append((x, y, z))
+
+    faces = [list(range(0, vertCount))]
+
+    me = bpy.data.meshes.new("circle")
+    me.from_pydata(verts, [], faces)
     return me
 
 
@@ -335,8 +360,8 @@ def newLathe(radii=None, diameters=None, heights=None, addTopFace=True, addBotto
     me = bpy.data.meshes.new("lathe")
     me.from_pydata(verts, [], faces)
 
-
     return me
+
 
 def makeNormalsConsistent(me):
     bm = bmesh.new()
@@ -355,36 +380,39 @@ def newHinge(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, unitDepth
     # unitDepth is the visible width of each unit - it is equal to the width of the female but is only equal to the middle part of the male
 
     diaphragm = unitDepth - 2 * purchase
-    if diaphragm<0:
+    if diaphragm < 0:
         raise Exception("unitDepth must be greater than (2*purchase)")
 
-    innerRadius = innerDiam/2
-    outerRadius = outerDiam/2
+    innerRadius = innerDiam / 2
+    outerRadius = outerDiam / 2
 
     me = []
 
-    mod=0 if startWithFemale else 1
+    mod = 0 if startWithFemale else 1
     for i in range(0, units):
         if i % 2 == mod:
-            female = newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[purchase, 0, 2*purchase+diaphragm,diaphragm + purchase], vertCount=64)
+            female = newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius],
+                              heights=[purchase, 0, 2 * purchase + diaphragm, diaphragm + purchase], vertCount=64)
             transposeMesh(female, dz=purchase + (clearance + unitDepth) * i)
             me.append(female)
         else:
-            male = newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius], heights=[0, purchase, purchase + unitDepth, 2 * purchase + unitDepth], vertCount=64)
+            male = newLathe(radii=[innerRadius, outerRadius, outerRadius, innerRadius],
+                            heights=[0, purchase, purchase + unitDepth, 2 * purchase + unitDepth], vertCount=64)
             transposeMesh(male, dz=(clearance + unitDepth) * i)
             me.append(male)
 
     # center at 0,0,0
     copy = fromMeshes(me)
-    x,y,z = calculate_center(copy)
+    x, y, z = calculate_center_of_bounding_box(copy)
     remove(copy)
     for m in me:
-        transposeMesh(m, dx=-x,dy=-y,dz=-z)
+        transposeMesh(m, dx=-x, dy=-y, dz=-z)
 
     return me
 
+
 def recenter(me, dx=0, dy=0, dz=0):
-    c = calculate_center(me)
+    c = calculate_center_of_bounding_box(me)
     transposeMesh(me, dx=-c[XAXIS] + dx, dy=-c[YAXIS] + dy, dz=-c[ZAXIS] + dz)
 
 
@@ -398,29 +426,83 @@ def transposeMesh(theMesh, dx=None, dy=None, dz=None):
             v.co[ZAXIS] += dz
 
 
+def new345Triangle(axis):
+    if axis == XAXIS:
+        verts = [[0, 0, 0], [0, 4, 0], [0, 4, 3]]
+    elif axis == YAXIS:
+        verts = [[0, 0, 0], [4, 0, 0], [4, 0, 3]]
+    elif axis == ZAXIS:
+        verts = [[0, 0, 0], [4, 0, 0], [4, 3, 0]]
+
+    faces = [(0, 1, 2)]
+    me = bpy.data.meshes.new("345_triangle")
+    me.from_pydata(verts, [], faces)
+    return me
+
+
+def rotate(m, axis, deg=0, direction=CLOCKWISE):
+    x, y, z = calculate_center_of_bounding_box(m)
+    rotate_around(m, axis, x, y, z, deg, direction)
+
+
+def rotate_around(m, axis, x, y, z, deg=0, direction=CLOCKWISE):
+    deg *= direction
+
+    for i in range(0, len(m.vertices)):
+        if axis == ZAXIS:
+            vx, vy, vz = (m.vertices[i].co[XAXIS] - x, m.vertices[i].co[YAXIS] - y, m.vertices[i].co[ZAXIS] - z)
+        elif axis == XAXIS:
+            vz, vx, vy = (m.vertices[i].co[XAXIS] - x, m.vertices[i].co[YAXIS] - y, m.vertices[i].co[ZAXIS] - z)
+        elif axis == YAXIS:
+            vx, vz, vy = (m.vertices[i].co[XAXIS] - x, m.vertices[i].co[YAXIS] - y, m.vertices[i].co[ZAXIS] - z)
+
+        vh = sqrt(vx * vx + vy * vy)  # hypotenuse
+        if vh == 0:
+            continue
+        a = degrees(acos(vx / vh))
+        if vy < 0:
+            a = 360 - a
+        a += deg
+        nx = cos(radians(a)) * vh
+        ny = sin(radians(a)) * vh
+        nz = vz
+
+        if axis == ZAXIS:
+            m.vertices[i].co[XAXIS], m.vertices[i].co[YAXIS], m.vertices[i].co[ZAXIS] = nx + x, ny + y, nz + z
+        elif axis == XAXIS:
+            m.vertices[i].co[XAXIS], m.vertices[i].co[YAXIS], m.vertices[i].co[ZAXIS] = nz + x, nx + y, ny + z
+        elif axis == YAXIS:
+            m.vertices[i].co[XAXIS], m.vertices[i].co[YAXIS], m.vertices[i].co[ZAXIS] = nx + x, nz + y, ny + z
+
+
 def transposeMeshes(meshes, dx=None, dy=None, dz=None):
     for me in meshes:
-        transposeMesh(me, dx,dy,dz)
+        transposeMesh(me, dx, dy, dz)
 
-def rotateMesh(theMesh, axis, deg):
-    tmpObj = object.newObjectFromMesh("tempForRotate", theMesh)
+
+def rotateMesh(m, axis, deg):
+    rotate(m, axis, deg)
+    return
+    tmpObj = object.newObjectFromMesh("tempForRotate", m)
     object.rotateObj(obj=tmpObj, axis=axis, deg=deg)
     object.selectNone()
     tmpObj.select = True
     bpy.ops.object.transform_apply(rotation=True)
     tmpMesh = fromObject(tmpObj)
 
-    for i in range(0, len(theMesh.vertices)):
-        theMesh.vertices[i].co[XAXIS] = tmpMesh.vertices[i].co[XAXIS]
-        theMesh.vertices[i].co[YAXIS] = tmpMesh.vertices[i].co[YAXIS]
-        theMesh.vertices[i].co[ZAXIS] = tmpMesh.vertices[i].co[ZAXIS]
+    for i in range(0, len(m.vertices)):
+        m.vertices[i].co[XAXIS] = tmpMesh.vertices[i].co[XAXIS]
+        m.vertices[i].co[YAXIS] = tmpMesh.vertices[i].co[YAXIS]
+        m.vertices[i].co[ZAXIS] = tmpMesh.vertices[i].co[ZAXIS]
 
     bpy.data.objects.remove(tmpObj, do_unlink=True)
     bpy.data.meshes.remove(tmpMesh, do_unlink=True)
 
+
 def rotateMeshes(meshes, axis, deg):
-    for me in meshes:
-        rotateMesh(me, axis, deg)
+    cx, cy, cz = calculate_center_of_bounding_box_meshes(meshes)
+    for m in meshes:
+        rotate_around(m, axis, cx,cy,cz, deg)
 
 def scaleMesh(theMesh, sx=1, sy=1, sz=1):
     tmpObj = object.newObjectFromMesh("tempForScale", theMesh)
@@ -505,24 +587,31 @@ def fromBoolean(m1, m2, operation="DIFFERENCE", remove_source_meshes=False):
 
     return newMesh
 
+
 def _mesh_info(m):
-    count = len(m.vertices)
-    if count == 0:
+    vert_count = len(m.vertices)
+    if vert_count == 0:
         raise Exception("No vertices in mesh")
 
     x_min = m.vertices[0].co[XAXIS]
     x_max = m.vertices[0].co[XAXIS]
-
     y_min = m.vertices[0].co[YAXIS]
     y_max = m.vertices[0].co[YAXIS]
-
     z_min = m.vertices[0].co[ZAXIS]
     z_max = m.vertices[0].co[ZAXIS]
 
-    for i in range(1, len(m.vertices)):
+    x_sum = 0
+    y_sum = 0
+    z_sum = 0
+
+    for i in range(1, vert_count):
         x = m.vertices[i].co[XAXIS]
         y = m.vertices[i].co[YAXIS]
         z = m.vertices[i].co[ZAXIS]
+
+        x_sum += x
+        y_sum += y
+        z_sum += z
 
         if x < x_min:
             x_min = x
@@ -547,20 +636,75 @@ def _mesh_info(m):
     height = y_max - y_min
     depth = z_max - z_min
 
+    return {
+        'w': width,
+        'h': height,
+        'd': depth,
+        'x_max': x_max,
+        'x_min': x_min,
+        'y_max': y_max,
+        'y_min': y_min,
+        'z_max': z_max,
+        'z_min': z_min,
+        'x_mean': x_sum / vert_count,
+        'y_mean': y_sum / vert_count,
+        'z_mean': z_sum / vert_count,
+    }
+
+
+def calculate_mean_center(m):
+    info = _mesh_info(m)
+    return (info['x_mean'], info['y_mean'], info['z_mean'])
+
+def calculate_center_of_bounding_box_meshes(meshes):
+    if len(meshes) == 0:
+        raise Exception("no meshes provided: empty array")
+
+    info = _mesh_info(meshes[0])
+    x_min, x_max = info['x_min'], info['x_max']
+    y_min, y_max = info['y_min'], info['y_max']
+    z_min, z_max = info['z_min'], info['z_max']
+
+    for m in meshes:
+        info = _mesh_info(m)
+
+        if info['x_min'] < x_min:
+            x_min = info['x_min']
+
+        if info['x_max']> x_max:
+            x_max = info['x_max']
+
+        if info['y_min'] < y_min:
+            y_min = info['y_min']
+
+        if info['y_max']> y_max:
+            y_max = info['y_max']
+
+        if info['z_min'] < z_min:
+            z_min = info['z_min']
+
+        if info['z_max']> z_max:
+            z_max = info['z_max']
+
     # centers
     cx = (x_min + x_max) / 2
     cy = (y_min + y_max) / 2
     cz = (z_min + z_max) / 2
+    return cx, cy, cz
 
-    return (width, height, depth, cx, cy, cz)
+def calculate_center_of_bounding_box(m):
+    info = _mesh_info(m)
+    # centers
+    cx = (info['x_min'] + info['x_max']) / 2
+    cy = (info['y_min'] + info['y_max']) / 2
+    cz = (info['z_min'] + info['z_max']) / 2
+    return cx, cy, cz
 
-def calculate_center(m):
-    _,_,_,cx,cy,cz = _mesh_info(m)
-    return cx,cy,cz
 
 def calculate_dimensions(m):
-    w,h,d,_,_,_ = _mesh_info(m)
-    return w,h,d
+    info = _mesh_info(m)
+    return info['w'], info['h'], info['d']
+
 
 def fromIntersection(m1, m2, remove_source_meshes=False):
     return fromBoolean(m1, m2, operation="INTERSECT", remove_source_meshes=remove_source_meshes)

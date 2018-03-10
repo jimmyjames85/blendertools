@@ -65,7 +65,7 @@ def calculate_center_of_objects(objs):
     tmp_mesh = mesh.fromMeshes(meshData)
     tmp_obj = newObjectFromMesh("tmp_obj_for_center", tmp_mesh)
 
-    center = mesh.calculate_center(tmp_mesh)
+    center = mesh.calculate_center_of_bounding_box(tmp_mesh)
 
     remove(tmp_obj)
     return center
