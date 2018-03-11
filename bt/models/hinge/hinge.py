@@ -1,5 +1,6 @@
 from bt import mesh, object, common
 from bt.common import XAXIS, YAXIS, ZAXIS
+import time
 from math import sin, cos, tan, asin, acos, atan, sqrt, radians, degrees, floor
 import bpy
 import bmesh
@@ -7,15 +8,17 @@ import bmesh
 # no need for console any more, use F5 to create new refresh by doing the following:
 # https://blender.stackexchange.com/questions/34722/global-keyboard-shortcut-to-execute-text-editor-script
 #
-# Alt+F10 for fullscreen in 3D view and then F5 to refresh
+#
+# Ctrl+Up (or Alt+F10 for fullscreen)
+# then F5 to refresh
 #
 # User Preferences -> 3D View -> 3D View (Global) -> Add New
 # Name: view3d.global_script_runner
-# Key: F10 (or whatever you like)
+# Key: F5 (or whatever you like)
 #
 # Paste the following into the text editor pane and run the script once
 
-# import bpy
+# import bpy, time
 # class GlobalScriptRunner(bpy.types.Operator):
 #     """Tooltip"""
 #     bl_idname = "view3d.global_script_runner"
@@ -26,6 +29,7 @@ import bmesh
 #     def execute(self, context):
 #         import sys, importlib; sys.path.append('/home/jim/git/blendertools'); from bt.models.hinge import hinge;
 #         print('reloading...'); importlib.reload(hinge); print('loaded'); obj = hinge.main()
+#         print("%f" %(time.time()))
 #         return {'FINISHED'}
 # def register():
 #     bpy.utils.register_class(GlobalScriptRunner)
@@ -140,6 +144,12 @@ def newPillBox(name="pillbox"):
     clearance=0.4
     units = 15
 
+
+    hinges = mesh.newHingeWithHandles(units, startWithFemale=True, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
+    me = mesh.fromMeshes(hinges, True)
+    return object.newObjectFromMesh(name, me)
+    # jimmy
+
     cell = mesh.newHollowBox(width=cellWidth, height=cellHeight, depth=cellDepth, wallThickness=cellWallThickness)
 
     hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
@@ -149,20 +159,16 @@ def newPillBox(name="pillbox"):
     hingeZ = (cellDepth + outerDiam) / 2 + clearance
     mesh.transposeMeshes(hinges, dy=hingeY, dz=hingeZ)
 
-    lidHeight = cellHeight - cellWallThickness + clearance
+    lidHeight = cellHeight - cellWallThickness - clearance
     lid = mesh.newHexahedron(width=cellWidth, depth=lidHeight, height=outerDiam)
     lid_hinge_clearance = outerDiam / 2 + clearance # todo this is not really the clearance between the lid and the hinge
     mesh.transposeMesh(lid, dy=hingeY , dz=hingeZ + lidHeight / 2 + lid_hinge_clearance)
 
     # closed lid
-    # todo mesh.rotate_about which is the same as rotate around cursor
-    # mesh.rotateMesh(lid, XAXIS, 90)
-    # w,h,d = mesh.calculate_dimensions(lid)
-    # mesh.transposeMesh(lid, dy=h)
+    # mesh.rotate_around(lid, XAXIS, x=0, y=hingeY, z=hingeZ, deg=-90)
 
     back = mesh.newHexahedron(width=cellWidth, depth=cellDepth, height=outerDiam)
     mesh.transposeMesh(back, dy=hingeY)
-
 
     # handles are what attach the hinge to the pillbox
     handles = []
@@ -207,8 +213,7 @@ def main():
 
     for lib in [mesh, object]:
         importlib.reload(lib)
-    #
-    #
+
     # sm = bpy.data.objects['BezierCurve']
     # mesh.codeFromObject(sm, "/tmp/tmp.py")
     # return
@@ -219,4 +224,5 @@ def main():
         if obj.name == "hinge" or obj.name=="pillbox" or obj.name=="345_triangle":
             object.deleteObjIfExists(obj.name)
 
+    print("%f" %(time.time()))
     return newPillBox()

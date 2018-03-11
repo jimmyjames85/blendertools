@@ -371,6 +371,85 @@ def makeNormalsConsistent(me):
     bm.free()
 
 
+def newHingeWithHandles(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, unitDepth=6.8, width=20, clearance=0.4, purchase=2.7):
+
+    hinges = newHinge(units, startWithFemale, innerDiam, outerDiam, unitDepth, clearance, purchase)
+
+    # todo height must be greater than outerDiam + clearance
+
+    # handles are what attach the hinge to the pillbox
+
+    mod = 0 if startWithFemale else 1
+    for i, h in enumerate(hinges):
+        x,y,z = calculate_center_of_bounding_box(h)
+
+        # if i % 2 == mod:
+        #     #female
+        #     verts=[]
+        #     negXFace=[]
+        #     posYFace=[]
+        #     negYFace=[]
+        #     posZFace=[]
+        #     negZFace=[]
+        #
+        #     hingeVerts, _, _ = vertsEdgesFontsFromMesh(h)
+        #
+        #     #sideFace
+        #     negXFace_x = x - width
+        #     hingeVerts.append([negXFace_x, y - outerDiam / 2, z + unitDepth / 2])
+        #     hingeVerts.append([negXFace_x, y + outerDiam / 2, z + unitDepth / 2])
+        #     hingeVerts.append([negXFace_x, y - outerDiam / 2, z - unitDepth / 2])
+        #     hingeVerts.append([negXFace_x, y + outerDiam / 2, z - unitDepth / 2])
+        #
+        #     for v in hingeVerts:
+        #         if v[XAXIS] <= 0.01: #todo hmm
+        #
+        #
+        #             vertex = (v[XAXIS] - 0.001, v[YAXIS], v[ZAXIS])
+        #             #vertex[XAXIS] -= 0.001 # this is because of slic3r
+        #             verts.append(vertex)
+        #
+        #             vi=len(verts)-1 # vertex index for faces
+        #
+        #             if v[XAXIS]-x==negXFace_x:
+        #                 negXFace.append(vi)
+        #
+        #             if v[ZAXIS]-z >= unitDepth/2:
+        #                 posZFace.append(vi)
+        #             elif v[ZAXIS]-z <= -unitDepth/2:
+        #                 negZFace.append(vi)
+        #
+        #             if v[YAXIS]-y >= outerDiam/2:
+        #                 posYFace.append(vi)
+        #             elif v[YAXIS]-y <= -outerDiam/2:
+        #                 negYFace.append(vi)
+        #
+        #     negXFace = [negXFace[1],negXFace[3],negXFace[2],negXFace[0]]
+        #     me = bpy.data.meshes.new("tmp")
+        #     me.from_pydata(verts, [], [posZFace, negZFace, negXFace, posYFace, negYFace])
+        #     hinges[i] = fromUnion(hinges[i], me, True)
+        if i % 2 == mod:
+            # female
+            handle = newHexahedron(depth=unitDepth, width=width, height=outerDiam)
+            transposeMesh(handle, dx=x-width/2, dy=y, dz=z)
+
+            cutout = newCylinder(diameter=outerDiam*1.01, depth=outerDiam*3)
+            transposeMesh(cutout, dx=x-0.01, dy=y, dz=z)
+            handle = fromDifference(handle,cutout, True)
+
+            hinges[i] = fromUnion(h, handle, True)
+        else:
+            # male
+            handle = newHexahedron(depth=unitDepth, width=width, height=outerDiam)
+            transposeMesh(handle, dx=x+width/2, dy=y, dz=z)
+            hinges[i] = fromUnion(h, handle, True)
+
+
+
+
+    return hinges
+
+
 def newHinge(units=5, startWithFemale=True, innerDiam=6, outerDiam=12, unitDepth=6.8, clearance=0.4, purchase=2.7):
     # diaphragm 2. a thin sheet of material forming a partition. # the female must be wider than the male b/c the female requires a diaphragm >0
     # purchase 2. a hold or position on something for applying power advantageously, or the advantage gained by such application.
