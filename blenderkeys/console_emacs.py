@@ -1,6 +1,7 @@
 import bpy
 import os
 
+# I can't remember where I found this but this was copied from somewhere :/
 def kmi_props_setattr(kmi_props, attr, value):
     try:
         setattr(kmi_props, attr, value)
@@ -144,3 +145,8 @@ kmi_props_setattr(kmi.properties, 'text', '\t')
 
 kmi = km.keymap_items.new('console.insert', 'TEXTINPUT', 'ANY', any=True)
 
+#####################
+# f5 reload it
+km_refresh_f5_name = "view3d.f5_reload_it"
+km = kc.keymaps.new('3D View', space_type='VIEW_3D', region_type='WINDOW', modal=False)
+kmi = km.keymap_items.new(km_refresh_f5_name, 'F5', 'PRESS')

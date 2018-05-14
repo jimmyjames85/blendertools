@@ -141,31 +141,48 @@ def newPillBox(name="pillbox"):
     innerDiam=1.875
     outerDiam=3.75
     purchase = 0.84375
-    clearance=0.4
+    hinge_clearance=0.4
     units = 15
 
+    # skirt
+    skirtThickness = 0.8
+    skirtClearance = 0.4
 
-    hinges = mesh.newHingeWithHandles(units, startWithFemale=True, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
-    me = mesh.fromMeshes(hinges, True)
-    return object.newObjectFromMesh(name, me)
-    # jimmy
+
+    # hinges = mesh.newHingeWithHandles(units, startWithFemale=True, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, hinge_clearance=hinge_clearance, purchase=purchase)
+    # me = mesh.fromMeshes(hinges, True)
+    # return object.newObjectFromMesh(name, me)
+    # # jimmy
 
     cell = mesh.newHollowBox(width=cellWidth, height=cellHeight, depth=cellDepth, wallThickness=cellWallThickness)
 
-    hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=clearance, purchase=purchase)
+    hinges = mesh.newHinge(units, startWithFemale=False, innerDiam=innerDiam, outerDiam=outerDiam, unitDepth=unitDepth, clearance=hinge_clearance, purchase=purchase)
     mesh.rotateMeshes(hinges, YAXIS, 90)
 
     hingeY = (cellHeight + outerDiam) / 2 - cellWallThickness
-    hingeZ = (cellDepth + outerDiam) / 2 + clearance
+    hingeZ = (cellDepth + outerDiam) / 2 + hinge_clearance
     mesh.transposeMeshes(hinges, dy=hingeY, dz=hingeZ)
 
-    lidHeight = cellHeight - cellWallThickness - clearance
-    lid = mesh.newHexahedron(width=cellWidth, depth=lidHeight, height=outerDiam)
-    lid_hinge_clearance = outerDiam / 2 + clearance # todo this is not really the clearance between the lid and the hinge
-    mesh.transposeMesh(lid, dy=hingeY , dz=hingeZ + lidHeight / 2 + lid_hinge_clearance)
+    lidHeight = cellHeight - cellWallThickness - hinge_clearance
+    lid = mesh.newHexahedron(width=cellWidth, height=lidHeight, depth=outerDiam)
+    lid_hinge_clearance = outerDiam / 2 + hinge_clearance # todo this is not really the hinge_clearance between the lid and the hinge
+
+    skirtHeight = cellHeight - 2*cellWallThickness -3*skirtClearance
+    skirtWidth = cellWidth -2*cellWallThickness - 2*skirtClearance
+
+    skirtDepth = outerDiam  + 3
+    skirt_Y = 2 #todo rename
+    skirt = mesh.newHollowBox(width=skirtWidth, depth=skirtDepth, height=skirtHeight, wallThickness=skirtThickness)
+
+    mesh.rotate(lid, XAXIS, -90)
+    mesh.rotate(skirt, XAXIS, -90)
+
+    mesh.transposeMesh(lid, dy=hingeY, dz=hingeZ + lidHeight / 2 + lid_hinge_clearance )
+    mesh.transposeMesh(skirt, dy=hingeY - skirt_Y, dz=hingeZ + skirtHeight / 2 + outerDiam / 2 + 2*skirtClearance)
 
     # closed lid
     # mesh.rotate_around(lid, XAXIS, x=0, y=hingeY, z=hingeZ, deg=-90)
+    # mesh.rotate_around(skirt, XAXIS, x=0, y=hingeY, z=hingeZ, deg=-90)
 
     back = mesh.newHexahedron(width=cellWidth, depth=cellDepth, height=outerDiam)
     mesh.transposeMesh(back, dy=hingeY)
@@ -180,8 +197,8 @@ def newPillBox(name="pillbox"):
             handle = mesh.newHexahedron(depth=handleHeight, width=unitDepth, height=outerDiam)
             mesh.transposeMesh(handle, dx=x, dy=y, dz=z + handleHeight / 2)
         else:
-            handle = mesh.newHexahedron(depth=outerDiam/2 + cellDepth+clearance, width=unitDepth, height=outerDiam)
-            mesh.transposeMesh(handle, dx=x, dy=y, dz=z-(cellDepth+clearance)/2 - outerDiam/4)
+            handle = mesh.newHexahedron(depth=outerDiam/2 + cellDepth+hinge_clearance, width=unitDepth, height=outerDiam)
+            mesh.transposeMesh(handle, dx=x, dy=y, dz=z-(cellDepth+hinge_clearance)/2 - outerDiam/4)
 
         cutout = mesh.newCylinder(diameter=outerDiam, depth=3*unitDepth)
         mesh.rotateMesh(cutout, YAXIS, 90)
@@ -190,7 +207,7 @@ def newPillBox(name="pillbox"):
 
         handles.append(handle)
 
-    me = mesh.fromMeshes(hinges + [cell,lid, back] + handles,True)
+    me = mesh.fromMeshes(hinges + [cell,lid, back,skirt] + handles ,True)
     # PRINT
     # mesh.rotateMesh(me, XAXIS, -90)
     # mesh.transposeMesh(me, dz=cellHeight/2+outerDiam-cellWallThickness)

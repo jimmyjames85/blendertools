@@ -10412,9 +10412,9 @@ def main():
     for obj in bpy.data.objects:
         object.deleteObjIfExists(obj.name)
 
-    return newSpinnerButtons()
+    #return newSpinnerButtons()
 
-    # return newMarshmello_spinner()
+    return newMarshmello_spinner()
     # return pill_crusher()
     # return dadsPillCrusherHandle()
     # return newCardHolder()
