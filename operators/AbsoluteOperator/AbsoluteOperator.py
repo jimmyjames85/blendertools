@@ -4,11 +4,14 @@
 # TODO: import bpy: run `sudo pip install fake-bpy-module-2.91` from https://github.com/nutti/fake-bpy-module
 # TODO: import bpy opt #2: https://github.com/Korchy/blender_autocomplete/tree/master/2.92
 
+# TODO: next operator idea: always draw coordinates on 3D View for selected active object / vert (maybe as an overlay?)
+
+# TODO: is key free, don't override blender keyshortcut https://docs.blender.org/manual/en/latest/addons/development/is_key_free.html
+
 import sys
 import time
-
 import bpy
-
+import bmesh
 import bgl
 import blf
 import gpu
@@ -47,7 +50,17 @@ class AbsoulteOperator(bpy.types.Operator):
     sign = float(1.0)
     mouse_path = []
 
+    def __init__(self):
+        print("initringg....")
+
+    # destructor is useful for modal operators and is called after operator finishes
+    # https://docs.blender.org/api/current/bpy.types.Operator.html#modal-execution
+    def __del__(self):
+        print("destruct me")
+        self.unregisterDrawHandler()
+
     # helper functions
+
     def log(self, text, level={'INFO'}):
         self.report(level, text)
 
@@ -85,7 +98,10 @@ class AbsoulteOperator(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def unregisterDrawHandler(self):
-        bpy.types.SpaceView3D.draw_handler_remove(self._handle, 'WINDOW')
+        handle = getattr(self, "_handle", None)
+        if handle is not None:
+            self._handle = None
+            bpy.types.SpaceView3D.draw_handler_remove(handle, 'WINDOW')
 
     def modal(self, context, event):
         context.area.tag_redraw()  # redraw screen
@@ -100,9 +116,10 @@ class AbsoulteOperator(bpy.types.Operator):
                 return self.runningModal()
             self.execute(context)
             return self.finishModal()
+
         # x,y,z
         if event.unicode in ['x', 'y', 'z']:
-            self.axis = event.unicode
+            self.axis = event.unicode.lower()
             return self.runningModal()
         # +
         if event.unicode == '+':
@@ -128,6 +145,12 @@ class AbsoulteOperator(bpy.types.Operator):
             self.execute(context)
             return self.finishModal()
 
+        if event.type == 'BACK_SPACE' and event.value == 'PRESS':
+            length = len(self.user_input)
+            if length > 0:
+                self.user_input = self.user_input[:length-1]
+            return self.runningModal()
+
         # skip invalid input
         if not event.unicode.isdigit() and event.unicode not in ['.', '+', '-']:
             return self.runningModal()  # skip invalid input
@@ -152,8 +175,37 @@ class AbsoulteOperator(bpy.types.Operator):
         # default is used if not specified in input
         units_default = context.scene.unit_settings.length_unit  # Millimeters, feet, etc
         system = context.scene.unit_settings.system  # IMPERIAL or METRIC
+
         # TODO: bpy.utils.units.to_value func can do math !?!! e.g. input 2+5-50 works
+
+        # https://docs.blender.org/api/blender_python_api_2_76_2/bpy.utils.units.html#bpy.utils.units.to_value
         return bpy.utils.units.to_value(system, "LENGTH", self.user_input, units_default)
+
+    def executeOnActiveObject(self, context, val):
+        loc = context.active_object.location
+        loc[self.axisIndex()] = val
+
+    def axisIndex(self):
+        m = {'x': 0, 'y': 1, 'z': 2}
+        return m[self.axis]
+
+
+    def executeOnSelectedVertices(self, context, val):
+        # load current mesh in edit mode
+        me = context.object.data
+        bm = bmesh.from_edit_mesh(me)
+
+        # modify
+        i = self.axisIndex()
+        for v in bm.verts:
+            if v.select:
+                v.co[i] = val
+
+        # update
+        bmesh.update_edit_mesh(me)
+
+        # See: https://blender.stackexchange.com/questions/149518/bmesh-from-edit-mesh-points-to-old-dead-bmesh-after-free
+        # bm.free()
 
     def execute(self, context):
         if self.validate(context):
@@ -162,6 +214,20 @@ class AbsoulteOperator(bpy.types.Operator):
             print("input received for %s-axis: %s" % (self.axis, val))
         else:
             popover("error validating final input...")
+            return {'FINISHED'}
+
+        mode = context.active_object.mode
+        if mode == 'OBJECT':
+            self.executeOnActiveObject(context, val)
+        elif mode == 'EDIT':
+            try:
+                self.executeOnSelectedVertices(context, val)
+            except Exception as e:
+                self.unregisterDrawHandler()
+                self.log(("edit execution failed: %s" % e), level={'ERROR'})
+                # popover("error in execute:" % e)
+
+
         # print(context.active_object.data.vertices[0].select) # for edit mode
         # print(context.active_object.location.x) # for object
         # print(bpy.context.active_object.data.vertices.data.vertices[0].co)
@@ -226,6 +292,7 @@ def reload_texts():
     return ret
 
 
+######################################################################
 def main():
     if reload_texts():
         # bpy.utils.unregister_class(AbsoulteOperator)
