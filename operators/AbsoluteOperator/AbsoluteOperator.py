@@ -91,25 +91,25 @@ class AbsoulteOperator(bpy.types.Operator):
         context.area.tag_redraw()  # redraw screen
 
         # Escape
-        if event.type == 'ESC': #  or context.active_object.mode != 'EDIT':
+        if event.type == 'ESC':  # or context.active_object.mode != 'EDIT':
             return self.cancelModal()
         # Enter
-        elif event.type in ['RET', 'NUMPAD_ENTER']:
+        if event.type in ['RET', 'NUMPAD_ENTER']:
             if self.axis == "":
                 popover("Please specify axis: x, y, or z")
                 return self.runningModal()
             self.execute(context)
             return self.finishModal()
         # x,y,z
-        elif event.unicode in ['x', 'y', 'z']:
+        if event.unicode in ['x', 'y', 'z']:
             self.axis = event.unicode
             return self.runningModal()
         # +
-        elif event.unicode == '+':
+        if event.unicode == '+':
             self.sign = 1.0
             return self.runningModal()
         # -
-        elif event.unicode == '-':
+        if event.unicode == '-':
             self.sign = -1.0
             return self.runningModal()
 
@@ -129,10 +129,10 @@ class AbsoulteOperator(bpy.types.Operator):
             return self.finishModal()
 
         # skip invalid input
-        elif not event.unicode.isdigit() and event.unicode not in ['.', '+', '-']:
+        if not event.unicode.isdigit() and event.unicode not in ['.', '+', '-']:
             return self.runningModal()  # skip invalid input
-        else:
-            self.user_input += event.unicode
+
+        self.user_input += event.unicode
 
         if not self.validate(context):
             return self.cancelModal()
@@ -181,9 +181,8 @@ def draw_callback_px(self, context):
     if self.axis is not None:
         axis = self.axis
     sign = ''
-    if self.sign <0:
+    if self.sign < 0:
         sign = '-'
-
 
     # 0 is bottom, 1 above, etc...
     line0 = units + " " + axis
@@ -199,7 +198,6 @@ def draw_callback_px(self, context):
     blf.position(font_id, 15, 60, 0)
     blf.size(font_id, 20, 72)
     blf.draw(font_id, line1)
-
 
     # restore opengl defaults
     bgl.glLineWidth(1)
