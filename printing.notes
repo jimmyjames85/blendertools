@@ -32,3 +32,28 @@ Supports
 | interface pattern spacing     |          4 |
 | Don't support bridges         |  unchecked |
 
+----------------------------------------------------------------------
+Slic3r v1.39.2
+----------------------------------------------------------------------
+
+Supports for 0.15 mm layer height (DnD HeroForge)
+Retraction Length 0.9
+
+
+| Overhang threshold                              |      15 (0-15) (adjust and look for simple pillars) |
+|                                                 | (Dont engulf your object in a mad pile of supports) |
+|                                                 |                                                     |
+| Enforce support for the first (x layers)        |                                                   0 |
+| Raft Layers                                     |                                                   0 |
+| Contact Z distance                              |                                                 0.2 |
+| Pattern                                         |                                    rectilinear grid |
+| With sheath around the support                  |                                           unchecked |
+| Pattern spacing                                 |                                                   2 |
+| Patternangle                                    |                                                   0 |
+| Interface layers                                |                                                   5 |
+| Interface pattern spacing                       |                                                 0.2 |
+| Interface loops                                 |                                           unchecked |
+| Support on build plate only                     |                                           unchecked |
+| XY separation between an object and its support |                                                 60% |
+| Don't support bridges                           |                                           unchecked |
+| Synchronize with object layers                  |                                           unchecked |

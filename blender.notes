@@ -1,0 +1,19 @@
+# import your blender profile
+
+	TODO
+
+# [fill manifold holes](https://docs.blender.org/manual/en/dev/modeling/meshes/editing/cleanup.html)
+
+Actually from [Manifold holes](https://www.youtube.com/watch?v=KsHG74i6K0M)
+Enter edit mode
+
+	Ctrl+Shift+Alt+M
+
+
+
+# [Edge Loop select](https://wiki.blender.org/index.php/Doc:2.4/Manual/Modeling/Meshes/Selecting/Edges)
+
+Switch to edge selection mode
+
+	Ctrl+tab
+	Alt+Shift+RMB to select edge loops
