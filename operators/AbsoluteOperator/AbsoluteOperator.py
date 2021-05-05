@@ -8,6 +8,10 @@
 
 # TODO: is key free, don't override blender keyshortcut https://docs.blender.org/manual/en/latest/addons/development/is_key_free.html
 
+# TODO: next plugin/ key shortcut switch to millimeters/ft etc...
+
+# garbage pail top diam 170mm bto 120mm height 200m
+
 import sys
 import time
 import bpy
