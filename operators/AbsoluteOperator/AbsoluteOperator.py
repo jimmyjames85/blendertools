@@ -10,8 +10,6 @@
 
 # TODO: next plugin/ key shortcut switch to millimeters/ft etc...
 
-# garbage pail top diam 170mm bto 120mm height 200m
-
 import sys
 import time
 import bpy
@@ -26,7 +24,6 @@ bl_info = {
     "blender": (2, 82, 0),
     "category": "Object"
 }
-
 
 # like msgbox but with no title
 def popover(text):
@@ -52,8 +49,10 @@ class AbsoulteOperator(bpy.types.Operator):
     user_input = ""
     axis = None
     sign = float(1.0)
-    mouse_path = []
 
+
+    # Notice __init__() and __del__() are declared. For other operator types they are not useful but for
+    # modal operators they will be called before the Operator.invoke and after the operator finishes.
     def __init__(self):
         print("init")
 
@@ -77,6 +76,8 @@ class AbsoulteOperator(bpy.types.Operator):
             return False
         return True
 
+    # invoke is used to initialize the operator from the context at the moment the operator is
+    # called. invoke() is typically used to assign properties which are then used by execute()
     def invoke(self, context, event):
         # args that get passed to draw handler
         args = (self, context)
@@ -101,30 +102,33 @@ class AbsoulteOperator(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def unregisterDrawHandler(self):
-        print("unregisterDrawHandler")
         handle = getattr(self, "_handle", None)
         if handle is not None:
-            print("unregisterDrawHandler REMOVED")
             self._handle = None
             bpy.types.SpaceView3D.draw_handler_remove(handle, 'WINDOW')
 
 
+    # The modal function that will keep being run to handle events until it returns {'FINISHED'} or
+    # {'CANCELLED'}.
     def modal(self, context, event):
         context.area.tag_redraw()  # redraw screen
 
         # Escape
         if event.type == 'ESC':  # or context.active_object.mode != 'EDIT':
             return self.cancelModal()
+
+
         # Enter
         if event.type in ['RET', 'NUMPAD_ENTER']:
-            if self.axis == "":
+            if self.axis not in ['x', 'y', 'z', 'X', 'Y', 'Z']:
                 popover("Please specify axis: x, y, or z")
                 return self.runningModal()
+
             self.execute(context)
             return self.finishModal()
 
         # x,y,z
-        if event.unicode in ['x', 'y', 'z']:
+        if event.unicode in ['x', 'y', 'z', 'X', 'Y', 'Z']:
             self.axis = event.unicode.lower()
             return self.runningModal()
         # +
@@ -187,14 +191,19 @@ class AbsoulteOperator(bpy.types.Operator):
         # https://docs.blender.org/api/blender_python_api_2_76_2/bpy.utils.units.html#bpy.utils.units.to_value
         return bpy.utils.units.to_value(system, "LENGTH", self.user_input, units_default)
 
-    def executeOnActiveObject(self, context, val):
-        loc = context.active_object.location
-        loc[self.axisIndex()] = val
-
     def axisIndex(self):
-        m = {'x': 0, 'y': 1, 'z': 2}
+        if self.axis not in ['x', 'y', 'z', 'X', 'Y', 'Z']:
+            popover("user input was not validated: defaulting to X-axis")
+            return 0
+
+        m = {'x': 0, 'X': 0, 'y': 1, 'Y': 1, 'z': 2, 'Z': 2}
         return m[self.axis]
 
+
+    def executeOnSelectedObjects(self, ctx, val):
+        axis = self.axisIndex()
+        for obj in ctx.selected_objects:
+            obj.location[axis] = val
 
     def executeOnSelectedVertices(self, context, val):
         # load current mesh in edit mode
@@ -224,7 +233,7 @@ class AbsoulteOperator(bpy.types.Operator):
 
         mode = context.active_object.mode
         if mode == 'OBJECT':
-            self.executeOnActiveObject(context, val)
+            self.executeOnSelectedObjects(context, val)
         elif mode == 'EDIT':
             try:
                 self.executeOnSelectedVertices(context, val)
@@ -232,16 +241,6 @@ class AbsoulteOperator(bpy.types.Operator):
                 self.unregisterDrawHandler()
                 self.log(("edit execution failed: %s" % e), level={'ERROR'})
                 # popover("error in execute:" % e)
-
-
-        # print(context.active_object.data.vertices[0].select) # for edit mode
-        # print(context.active_object.location.x) # for object
-        # print(bpy.context.active_object.data.vertices.data.vertices[0].co)
-        # context.object.active_object is selected object?
-        # for v in context.active_object.data.vertices.data.vertices:
-        #     if v.select:
-        #         t = v.co.x  # / self.unitMultiplier(context)
-        #         print("vert.x: %f " % t)  # local setting
 
         return {'FINISHED'}
 
@@ -311,6 +310,7 @@ def reload_texts():
 
 ######################################################################
 def main():
+
     if reload_texts():
         # bpy.utils.unregister_class(AbsoulteOperator)
         print("reloaded")
