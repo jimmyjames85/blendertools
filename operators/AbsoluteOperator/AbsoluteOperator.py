@@ -55,16 +55,15 @@ class AbsoulteOperator(bpy.types.Operator):
     mouse_path = []
 
     def __init__(self):
-        print("initringg....")
+        print("init")
 
     # destructor is useful for modal operators and is called after operator finishes
     # https://docs.blender.org/api/current/bpy.types.Operator.html#modal-execution
     def __del__(self):
-        print("destruct me")
+        print("destruct")
         self.unregisterDrawHandler()
 
     # helper functions
-
     def log(self, text, level={'INFO'}):
         self.report(level, text)
 
@@ -102,10 +101,13 @@ class AbsoulteOperator(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def unregisterDrawHandler(self):
+        print("unregisterDrawHandler")
         handle = getattr(self, "_handle", None)
         if handle is not None:
+            print("unregisterDrawHandler REMOVED")
             self._handle = None
             bpy.types.SpaceView3D.draw_handler_remove(handle, 'WINDOW')
+
 
     def modal(self, context, event):
         context.area.tag_redraw()  # redraw screen
@@ -143,7 +145,7 @@ class AbsoulteOperator(bpy.types.Operator):
             self.user_input = bpy.context.window_manager.clipboard
             self.sign = 1.0
 
-            if not self.validate(context):
+            if not self.validateInput(context):
                 return self.cancelModal()
 
             self.execute(context)
@@ -161,14 +163,14 @@ class AbsoulteOperator(bpy.types.Operator):
 
         self.user_input += event.unicode
 
-        if not self.validate(context):
+        if not self.validateInput(context):
             return self.cancelModal()
 
         return self.runningModal()  # skip invalid input
 
-    def validate(self, context):
+    def validateInput(self, ctx):
         try:
-            self.parseInput(context)
+            self.parseInput(ctx)
         except Exception as e:
             self.log(("invalid input: %s: %s" %
                       (e, self.user_input)), level={'ERROR'})
@@ -212,7 +214,7 @@ class AbsoulteOperator(bpy.types.Operator):
         # bm.free()
 
     def execute(self, context):
-        if self.validate(context):
+        if self.validateInput(context):
             val = self.sign * self.parseInput(context)
             self.log("input received for %s-axis: %s" % (self.axis, val))
             print("input received for %s-axis: %s" % (self.axis, val))
@@ -245,8 +247,17 @@ class AbsoulteOperator(bpy.types.Operator):
 
 
 # Copied from blender text templates opereator_modal_draw
-def draw_callback_px(self, context):
-    units = context.scene.unit_settings.length_unit
+def draw_callback_px(self, ctx):
+    try:
+        draw_px(self, ctx)
+    except Exception as e:
+        print("draw execution failed: %s" % e)
+        self.log(("draw execution failed: %s" % e), level={'ERROR'})
+        self.unregisterDrawHandler()
+
+
+def draw_px(self, ctx):
+    units = ctx.scene.unit_settings.length_unit
     axis = "axis unspecified"
     if self.axis is not None:
         axis = self.axis
@@ -260,12 +271,14 @@ def draw_callback_px(self, context):
 
     font_id = 0  # XXX, need to find out how best to get this.
 
+    pos_x = 600
+
     # draw some text
-    blf.position(font_id, 15, 30, 0)
+    blf.position(font_id, pos_x, 30, 0)
     blf.size(font_id, 20, 72)
     blf.draw(font_id, line0)
 
-    blf.position(font_id, 15, 60, 0)
+    blf.position(font_id, pos_x, 60, 0)
     blf.size(font_id, 20, 72)
     blf.draw(font_id, line1)
 
