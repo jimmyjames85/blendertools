@@ -1,0 +1,10 @@
+[REPORTS]
+disable=
+        line-too-long,
+        fixme,
+        missing-function-docstring,
+        missing-class-docstring,
+        invalid-name,
+        wrong-import-order,
+        no-self-use,
+        broad-except

@@ -44,7 +44,7 @@ class AbsoulteOperator(bpy.types.Operator):
     # TODO Rename everything
     bl_idname = "object.absolute_operator"
     bl_label = "set absolute positional value"
-    bl_options = {'REGISTER'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     user_input = ""
     axis = None
@@ -318,6 +318,10 @@ def main():
 
     bpy.utils.register_class(AbsoulteOperator)
     print("registerd...")
+
+    bpy.utils.unregister_class(AbsoulteOperator)
+    print("unregisterd...")
+    return
 
     if bpy.ops.object.absolute_operator.poll():
         print("invoking...")
