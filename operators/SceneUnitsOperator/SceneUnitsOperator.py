@@ -72,15 +72,15 @@ class BT_OT_SceneUnits(bpy.types.Operator):
         default='MILLIMETERS'  # TODO: set to current state
     )
 
-    # Notice __init__() and __del__() are declared. For other operator types they are not useful but for
-    # modal operators they will be called before the Operator.invoke and after the operator finishes.
-    def __init__(self):
-        print("__init__")
+    # # Notice __init__() and __del__() are declared. For other operator types they are not useful but for
+    # # modal operators they will be called before the Operator.invoke and after the operator finishes.
+    # def __init__(self):
+    #     print("__init__")
 
-    # destructor is useful for modal operators and is called after operator finishes
-    # https://docs.blender.org/api/current/bpy.types.Operator.html#modal-execution
-    def __del__(self):
-        print("__destruct__")
+    # # destructor is useful for modal operators and is called after operator finishes
+    # # https://docs.blender.org/api/current/bpy.types.Operator.html#modal-execution
+    # def __del__(self):
+    #     print("__destruct__")
 
     def log(self, text, level={'INFO'}):
         # only logs to info header if operator is modal
@@ -138,7 +138,6 @@ def reload_texts():
 
 classes = [BT_OT_SceneUnits, BT_MT_SceneUnitPie]
 
-
 def register():
     for cls in classes:
         try:
@@ -158,7 +157,7 @@ def unregister():
             print("ERROR unregister: %s" % e)
 
 
-def main():
+def developing_main():
     if reload_texts():
         print("reloaded")
         return
