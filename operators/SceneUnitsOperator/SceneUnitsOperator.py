@@ -34,7 +34,7 @@ def popover(text):
 
 
 class BT_MT_SceneUnitPie(Menu):
-    bl_label = "Select Unit Pie Menu"
+    bl_label = "Select Desired Scene Units"
 
     def draw(self, context):
         pie = self.layout.menu_pie()
@@ -59,14 +59,11 @@ class BT_OT_SceneUnits(bpy.types.Operator):
             #(identifier, name, description, icon, number), ...
 
             # ('ADAPTIVE', "Adaptive", "Set scene units to ADAPTIVE"),
-
             # ('MICORMETERS', "Micormeters", "Set scene units to MICORMETERS"),
             ('MILLIMETERS', "Millimeters", "Set scene units to MILLIMETERS"),
             ('METERS', "Meters", "Set scene units to METERS"),
             # ('CENTIMETERS', "Centimeters", "Set scene units to CENTIMETERS"),
             # ('KILOMETERS', "Kilometers", "Set scene units to KILOMETERS"),
-
-
             ('FEET', "Feet", "Set scene units to FEET"),
             ('INCHES', "Inches", "Set scene units to INCHES"),
             # ('THOU', "Thou", "Set scene units to THOU"),
